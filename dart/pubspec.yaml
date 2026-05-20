@@ -1,0 +1,19 @@
+name: rerout
+description: Official Dart SDK for the Rerout branded-link API.
+version: 0.1.0
+homepage: https://rerout.co
+repository: https://github.com/iamngoni/rerout-sdks
+issue_tracker: https://github.com/iamngoni/rerout-sdks/issues
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  crypto: ^3.0.6
+  dio: ^5.8.0+1
+  meta: ^1.16.0
+
+dev_dependencies:
+  mocktail: ^1.0.4
+  test: ^1.26.3
+  very_good_analysis: ^10.0.0

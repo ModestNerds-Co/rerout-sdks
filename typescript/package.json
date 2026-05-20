@@ -1,0 +1,60 @@
+{
+  "name": "@rerout/sdk",
+  "version": "0.1.0",
+  "description": "Official TypeScript / JavaScript SDK for the Rerout branded-link API.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Codecraft Solutions <hello@codecraftsolutions.co.za>",
+  "homepage": "https://github.com/iamngoni/rerout-sdks/tree/main/typescript",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iamngoni/rerout-sdks.git",
+    "directory": "typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/iamngoni/rerout-sdks/issues"
+  },
+  "keywords": [
+    "rerout",
+    "url-shortener",
+    "branded-links",
+    "qr-codes",
+    "webhooks",
+    "cloudflare"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --target node18",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "@types/node": "^22.10.0"
+  }
+}
