@@ -5,14 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "Codecraft Solutions <hello@codecraftsolutions.co.za>",
-  "homepage": "https://github.com/iamngoni/rerout-sdks/tree/main/typescript",
+  "homepage": "https://github.com/ModestNerds-Co/rerout-sdks/tree/master/typescript",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iamngoni/rerout-sdks.git",
+    "url": "git+https://github.com/ModestNerds-Co/rerout-sdks.git",
     "directory": "typescript"
   },
   "bugs": {
-    "url": "https://github.com/iamngoni/rerout-sdks/issues"
+    "url": "https://github.com/ModestNerds-Co/rerout-sdks/issues"
   },
   "keywords": [
     "rerout",
@@ -43,6 +43,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {

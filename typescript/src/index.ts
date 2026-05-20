@@ -5,7 +5,7 @@
  * codes, read analytics, and verify webhook signatures.
  *
  * @see https://rerout.co
- * @see https://github.com/iamngoni/rerout-sdks
+ * @see https://github.com/ModestNerds-Co/rerout-sdks
  */
 
 export { Rerout, DEFAULT_BASE_URL, Links, Project, Qr } from './client.js'
