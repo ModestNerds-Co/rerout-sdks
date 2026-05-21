@@ -1,0 +1,16 @@
+# Cargo build artifacts
+/target
+
+# Lockfile — committed for binaries, omitted for libraries.
+# The `rerout` crate is a library, so the lockfile is not tracked.
+Cargo.lock
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Backups
+*.bak
+*.orig

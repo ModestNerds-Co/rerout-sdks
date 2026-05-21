@@ -1,0 +1,22 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+
+# Go test artefacts
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# Vendored deps (we have no third-party deps; keep clean)
+vendor/
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

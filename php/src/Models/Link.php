@@ -1,0 +1,165 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Rerout\Models;
+
+use InvalidArgumentException;
+
+/**
+ * A short link as returned by the Rerout API.
+ *
+ * Fields mirror the server-side `LinkResponse` shape one-to-one so JSON is
+ * parsed without transformation.
+ */
+final readonly class Link
+{
+    /**
+     * @param string      $code            Short link path code.
+     * @param string      $shortUrl        Fully-qualified short URL — `https://{host}/{code}`.
+     * @param string|null $domainHostname  Verified custom domain hosting this link, when bound.
+     * @param string      $targetUrl       Destination the redirect resolves to.
+     * @param string      $projectId       Project that owns the link.
+     * @param int|null    $expiresAt       Unix seconds — expiration. Null for permanent links.
+     * @param bool        $isActive        Whether the link is currently active.
+     * @param string|null $seoTitle        Override social preview title.
+     * @param string|null $seoDescription  Override social preview description.
+     * @param string|null $seoImageUrl     Override social preview image URL.
+     * @param string|null $seoCanonicalUrl Override preview canonical URL.
+     * @param bool        $seoNoindex      Whether the preview HTML should be indexed.
+     * @param int|null    $seoUpdatedAt    Unix seconds — last SEO field change.
+     * @param int         $createdAt       Unix seconds — link creation time.
+     * @param int         $updatedAt       Unix seconds — last mutation.
+     */
+    public function __construct(
+        public string $code,
+        public string $shortUrl,
+        public ?string $domainHostname,
+        public string $targetUrl,
+        public string $projectId,
+        public ?int $expiresAt,
+        public bool $isActive,
+        public ?string $seoTitle,
+        public ?string $seoDescription,
+        public ?string $seoImageUrl,
+        public ?string $seoCanonicalUrl,
+        public bool $seoNoindex,
+        public ?int $seoUpdatedAt,
+        public int $createdAt,
+        public int $updatedAt,
+    ) {
+    }
+
+    /**
+     * Parse a {@see Link} from an API JSON envelope.
+     *
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            code: self::requireString($data, 'code'),
+            shortUrl: self::requireString($data, 'short_url'),
+            domainHostname: self::nullableString($data, 'domain_hostname'),
+            targetUrl: self::requireString($data, 'target_url'),
+            projectId: self::requireString($data, 'project_id'),
+            expiresAt: self::nullableInt($data, 'expires_at'),
+            isActive: self::requireBool($data, 'is_active'),
+            seoTitle: self::nullableString($data, 'seo_title'),
+            seoDescription: self::nullableString($data, 'seo_description'),
+            seoImageUrl: self::nullableString($data, 'seo_image_url'),
+            seoCanonicalUrl: self::nullableString($data, 'seo_canonical_url'),
+            seoNoindex: self::optionalBool($data, 'seo_noindex', true),
+            seoUpdatedAt: self::nullableInt($data, 'seo_updated_at'),
+            createdAt: self::requireInt($data, 'created_at'),
+            updatedAt: self::requireInt($data, 'updated_at'),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function requireString(array $data, string $key): string
+    {
+        $value = $data[$key] ?? null;
+        if (!is_string($value)) {
+            throw new InvalidArgumentException("Expected string field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function nullableString(array $data, string $key): ?string
+    {
+        $value = $data[$key] ?? null;
+        if ($value === null) {
+            return null;
+        }
+        if (!is_string($value)) {
+            throw new InvalidArgumentException("Expected nullable string field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function requireInt(array $data, string $key): int
+    {
+        $value = $data[$key] ?? null;
+        if (!is_int($value)) {
+            throw new InvalidArgumentException("Expected int field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function nullableInt(array $data, string $key): ?int
+    {
+        $value = $data[$key] ?? null;
+        if ($value === null) {
+            return null;
+        }
+        if (!is_int($value)) {
+            throw new InvalidArgumentException("Expected nullable int field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function requireBool(array $data, string $key): bool
+    {
+        $value = $data[$key] ?? null;
+        if (!is_bool($value)) {
+            throw new InvalidArgumentException("Expected bool field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function optionalBool(array $data, string $key, bool $default): bool
+    {
+        $value = $data[$key] ?? null;
+        if ($value === null) {
+            return $default;
+        }
+        if (!is_bool($value)) {
+            throw new InvalidArgumentException("Expected bool field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+}
