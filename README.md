@@ -11,17 +11,33 @@ Each SDK is hand-written to feel native in its language. They all wrap the same 
 
 ## Available SDKs
 
-| Language       | Package                          | Path                  | Status      |
-|----------------|----------------------------------|-----------------------|-------------|
-| TypeScript / JS | [`@rerout/sdk`](./typescript)   | [`typescript/`](./typescript) | v0.1 — preview |
-| Dart           | [`rerout`](./dart)               | [`dart/`](./dart)     | v0.1 — preview |
-| Rust           | _planned_                        |                       | —           |
-| Python         | _planned_                        |                       | —           |
-| Go             | _planned_                        |                       | —           |
-| PHP            | _planned_                        |                       | —           |
-| C#             | _planned_                        |                       | —           |
+### Base SDKs
 
-Every SDK is published under the [MIT License](#license).
+| Language        | Package                       | Path                            | Status         |
+|-----------------|-------------------------------|---------------------------------|----------------|
+| TypeScript / JS | `@rerout/sdk`                 | [`typescript/`](./typescript)   | v0.1 — preview |
+| Dart            | `rerout`                      | [`dart/`](./dart)               | v0.1 — preview |
+| Python          | `rerout`                      | [`python/`](./python)           | v0.1 — preview |
+| PHP             | `rerout/sdk`                  | [`php/`](./php)                 | v0.1 — preview |
+| Go              | `…/rerout-sdks/go`            | [`go/`](./go)                   | v0.1 — preview |
+| Rust            | `rerout`                      | [`rust/`](./rust)               | v0.1 — preview |
+| Ruby            | `rerout`                      | [`ruby/`](./ruby)               | v0.1 — preview |
+| Kotlin / JVM    | `co.rerout:rerout-kotlin`     | [`kotlin/`](./kotlin)           | v0.1 — preview |
+| C# / .NET       | `Rerout`                      | [`dotnet/`](./dotnet)           | v0.1 — preview |
+
+### Framework integrations
+
+| Framework      | Package                              | Path                                  | Status         |
+|----------------|--------------------------------------|---------------------------------------|----------------|
+| Django         | `rerout-django`                      | [`python-django/`](./python-django)   | v0.1 — preview |
+| Laravel        | `rerout/laravel`                     | [`php-laravel/`](./php-laravel)        | v0.1 — preview |
+| Rails          | `rerout-rails`                       | [`ruby-rails/`](./ruby-rails)          | v0.1 — preview |
+| Spring Boot    | `co.rerout:rerout-spring-boot-starter` | [`kotlin-spring/`](./kotlin-spring) | v0.1 — preview |
+| ASP.NET Core   | `Rerout.AspNetCore`                  | [`dotnet-aspnet/`](./dotnet-aspnet)    | v0.1 — preview |
+
+Every SDK is hand-written, comprehensively tested, and published under the
+[MIT License](#license). The shared spec all ports follow lives in
+[`AGENTS.md`](./AGENTS.md).
 
 ## Quick start
 

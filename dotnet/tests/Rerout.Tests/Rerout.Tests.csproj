@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer shared runtime when the net8.0 runtime is absent. -->
+    <RollForward>LatestMajor</RollForward>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- xUnit/test files use literal strings and skip docs by design. -->
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1861;xUnit1041</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Rerout\Rerout.csproj" />
+  </ItemGroup>
+
+</Project>

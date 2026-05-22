@@ -305,7 +305,7 @@ fn map_request_error(error: reqwest::Error) -> ReroutError {
             code: crate::error::synthetic_code_for_status(status.as_u16()).to_string(),
             status: status.as_u16(),
             message: error.to_string(),
-            extra: crate::error::ApiErrorDetails::default(),
+            extra: Box::default(),
         };
     }
     ReroutError::Network {

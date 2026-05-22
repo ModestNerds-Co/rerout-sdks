@@ -46,7 +46,10 @@ pub enum ReroutError {
         /// Human-readable error message.
         message: String,
         /// Extra fields (`path`, `timestamp`, `details`) when supplied.
-        extra: ApiErrorDetails,
+        ///
+        /// Boxed to keep the [`ReroutError`] enum compact — the optional
+        /// diagnostics rarely matter on the hot path.
+        extra: Box<ApiErrorDetails>,
     },
 
     /// The request never reached the server (DNS, TLS, connection reset, ...).
@@ -190,7 +193,7 @@ pub(crate) fn build_api_error(status: u16, body: &str) -> ReroutError {
             code: synthetic_code_for_status(status).to_string(),
             status,
             message: format!("Rerout returned HTTP {status} with no body."),
-            extra: ApiErrorDetails::default(),
+            extra: Box::default(),
         };
     }
     match serde_json::from_str::<serde_json::Value>(body) {
@@ -205,10 +208,7 @@ pub(crate) fn build_api_error(status: u16, body: &str) -> ReroutError {
                 .and_then(|v| v.as_str())
                 .map(str::to_string)
                 .unwrap_or_else(|| format!("Rerout returned HTTP {status}."));
-            let path = map
-                .get("path")
-                .and_then(|v| v.as_str())
-                .map(str::to_string);
+            let path = map.get("path").and_then(|v| v.as_str()).map(str::to_string);
             let timestamp = map
                 .get("timestamp")
                 .and_then(|v| v.as_str())
@@ -218,18 +218,18 @@ pub(crate) fn build_api_error(status: u16, body: &str) -> ReroutError {
                 code,
                 status,
                 message,
-                extra: ApiErrorDetails {
+                extra: Box::new(ApiErrorDetails {
                     path,
                     timestamp,
                     details,
-                },
+                }),
             }
         }
         _ => ReroutError::Api {
             code: synthetic_code_for_status(status).to_string(),
             status,
             message: format!("Rerout returned HTTP {status} (non-JSON body)."),
-            extra: ApiErrorDetails::default(),
+            extra: Box::default(),
         },
     }
 }

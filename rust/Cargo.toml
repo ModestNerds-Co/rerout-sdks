@@ -27,3 +27,9 @@ url = "2"
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 wiremock = "0.6"
+# Re-exposed for the webhook doctest, which signs a payload to demonstrate
+# `verify_rerout_signature`. These dedupe with the matching `[dependencies]`.
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+serde_json = "1"

@@ -377,8 +377,8 @@ func parseErrorResponse(status int, body []byte, path string) *ReroutError {
 	}
 }
 
-// trimTrailingSlashes mirrors `replaceAll(/\/+$/, '')` from the TS / Dart
-// reference SDKs.
+// trimTrailingSlashes strips every trailing '/' from s, mirroring the
+// trailing-slash trimming the TS and Dart reference SDKs apply to baseUrl.
 func trimTrailingSlashes(s string) string {
 	for len(s) > 0 && s[len(s)-1] == '/' {
 		s = s[:len(s)-1]
@@ -386,7 +386,8 @@ func trimTrailingSlashes(s string) string {
 	return s
 }
 
-// queryStringFromInts is a small helper for the common cursor/limit/days
-// patterns. Empty result when the value is nil / zero (depending on caller).
-func intToString(v int) string  { return strconv.Itoa(v) }
+// intToString and int64String render integers for cursor/limit/days query
+// parameters. Tiny wrappers, but they keep the call sites in links.go and
+// project.go terse.
+func intToString(v int) string   { return strconv.Itoa(v) }
 func int64String(v int64) string { return strconv.FormatInt(v, 10) }

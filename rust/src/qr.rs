@@ -31,11 +31,7 @@ impl<'a> Qr<'a> {
     pub async fn svg(&self, code: &str, options: &QrOptions) -> Result<String> {
         let path = format!("/v1/links/{}/qr", percent_encode_code(code));
         let pairs = options.to_query_pairs();
-        let query: Option<&[(&str, String)]> = if pairs.is_empty() {
-            None
-        } else {
-            Some(&pairs)
-        };
+        let query: Option<&[(&str, String)]> = if pairs.is_empty() { None } else { Some(&pairs) };
         self.client
             .request_text::<()>(HttpMethod::Get, &path, query, None)
             .await

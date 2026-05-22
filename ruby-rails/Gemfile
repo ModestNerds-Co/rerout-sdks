@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gemspec
+
+# Develop against the base `rerout` gem from this monorepo. Released
+# `rerout-rails` resolves `rerout ~> 0.1` from RubyGems via the gemspec
+# dependency — this `path:` override is local-development only.
+gem 'rerout', path: '../ruby'

@@ -3,10 +3,12 @@
 require 'faraday'
 require 'json'
 
+require_relative 'version'
 require_relative 'error'
 require_relative 'create_link_input'
 require_relative 'update_link_input'
 require_relative 'qr_options'
+require_relative 'webhooks'
 require_relative 'models'
 require_relative 'links'
 require_relative 'project'
@@ -108,8 +110,8 @@ module Rerout
     def base_headers
       {
         'Authorization' => "Bearer #{@api_key}",
-        'Accept'        => 'application/json',
-        'User-Agent'    => @user_agent
+        'Accept' => 'application/json',
+        'User-Agent' => @user_agent
       }
     end
 

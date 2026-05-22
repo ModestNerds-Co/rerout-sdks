@@ -449,7 +449,7 @@ impl QrEcc {
 /// QR refresh / cache-bust token.
 ///
 /// `On` sends `refresh=1`; `Value("v2")` sends `refresh=v2` verbatim. Use
-/// [`QrRefresh::from_bool`] or [`QrRefresh::from_str`] for the common cases.
+/// [`QrRefresh::from_bool`] or [`QrRefresh::from_value`] for the common cases.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QrRefresh {
     /// Plain boolean — serializes as `refresh=1`.
@@ -466,7 +466,7 @@ impl QrRefresh {
     }
 
     /// Build from a non-empty string. Returns `None` for the empty string.
-    pub fn from_str(value: impl Into<String>) -> Option<Self> {
+    pub fn from_value(value: impl Into<String>) -> Option<Self> {
         let s = value.into();
         if s.is_empty() {
             None

@@ -12,7 +12,7 @@ distinguish "leave this field alone" from "clear this field on the server"
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, TypeAlias, TypeVar
 
 
 class _UnsetType:
@@ -23,9 +23,9 @@ class _UnsetType:
     a value at all (leave the field untouched).
     """
 
-    _instance: "_UnsetType | None" = None
+    _instance: _UnsetType | None = None
 
-    def __new__(cls) -> "_UnsetType":
+    def __new__(cls) -> _UnsetType:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -41,8 +41,12 @@ UNSET: Final[_UnsetType] = _UnsetType()
 """Singleton sentinel used as the default for optional update-input fields."""
 
 
-# Type alias for "value, or omitted".
-type Maybe[T] = T | _UnsetType
+_T = TypeVar("_T")
+
+# Type alias for "value, or omitted". Written as a ``TypeAlias`` over a
+# ``TypeVar`` rather than the PEP 695 ``type Maybe[T]`` statement so the
+# package stays importable on Python 3.10 and 3.11.
+Maybe: TypeAlias = "_T | _UnsetType"
 
 
 EccLevel = Literal["L", "M", "Q", "H"]
@@ -69,7 +73,7 @@ class Link:
     seo_updated_at: int | None = None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Link":
+    def from_dict(cls, data: dict[str, Any]) -> Link:
         """Build a ``Link`` from the raw JSON dict the API returns."""
         return cls(
             code=str(data["code"]),
@@ -98,7 +102,7 @@ class ListLinksResult:
     next_cursor: int | None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ListLinksResult":
+    def from_dict(cls, data: dict[str, Any]) -> ListLinksResult:
         raw_links = data.get("links", []) or []
         return cls(
             links=tuple(Link.from_dict(item) for item in raw_links),
@@ -114,7 +118,7 @@ class StatsBreakdown:
     clicks: int
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "StatsBreakdown":
+    def from_dict(cls, data: dict[str, Any]) -> StatsBreakdown:
         return cls(value=str(data["value"]), clicks=int(data["clicks"]))
 
 
@@ -127,7 +131,7 @@ class DailyClicksPoint:
     qr_scans: int
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "DailyClicksPoint":
+    def from_dict(cls, data: dict[str, Any]) -> DailyClicksPoint:
         return cls(
             day=int(data["day"]),
             clicks=int(data["clicks"]),
@@ -150,7 +154,7 @@ class ProjectStats:
     top_codes: tuple[StatsBreakdown, ...]
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ProjectStats":
+    def from_dict(cls, data: dict[str, Any]) -> ProjectStats:
         return cls(
             days=int(data["days"]),
             total_clicks=int(data["total_clicks"]),
@@ -184,7 +188,7 @@ class LinkStats:
     referrers: tuple[StatsBreakdown, ...]
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "LinkStats":
+    def from_dict(cls, data: dict[str, Any]) -> LinkStats:
         return cls(
             code=str(data["code"]),
             days=int(data["days"]),
@@ -208,7 +212,7 @@ class ProjectInfo:
     slug: str
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ProjectInfo":
+    def from_dict(cls, data: dict[str, Any]) -> ProjectInfo:
         return cls(
             id=str(data["id"]),
             name=str(data["name"]),

@@ -49,9 +49,7 @@ module Rerout
       # @param input [Rerout::UpdateLinkInput]
       # @return [Rerout::Models::Link]
       def update(code, input)
-        unless input.is_a?(UpdateLinkInput)
-          raise ArgumentError, 'input must be a Rerout::UpdateLinkInput'
-        end
+        raise ArgumentError, 'input must be a Rerout::UpdateLinkInput' unless input.is_a?(UpdateLinkInput)
         if input.empty?
           raise Error.new(
             code: 'empty_update',

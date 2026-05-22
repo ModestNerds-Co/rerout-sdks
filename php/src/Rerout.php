@@ -183,7 +183,7 @@ final class Rerout
             ]);
         } catch (ConnectException $e) {
             throw new ReroutException(
-                errorCode: 'network_error',
+                errorCode: self::isTimeout($e) ? 'timeout' : 'network_error',
                 message: $e->getMessage(),
                 status: 0,
                 path: $path,
@@ -194,6 +194,7 @@ final class Rerout
             if ($resp !== null) {
                 throw $this->errorFromResponse($resp, $path, $e);
             }
+
             throw new ReroutException(
                 errorCode: self::isTimeout($e) ? 'timeout' : 'network_error',
                 message: $e->getMessage(),

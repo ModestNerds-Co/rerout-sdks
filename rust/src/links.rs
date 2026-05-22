@@ -43,11 +43,7 @@ impl<'a> Links<'a> {
             .request_json::<ListLinksResult, ()>(
                 HttpMethod::Get,
                 "/v1/links",
-                if query.is_empty() {
-                    None
-                } else {
-                    Some(&query)
-                },
+                if query.is_empty() { None } else { Some(&query) },
                 None,
             )
             .await

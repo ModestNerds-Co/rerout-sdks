@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Run on a newer shared runtime when the net8.0 runtime is absent. -->
+    <RollForward>LatestMajor</RollForward>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!--
+      The web test host uses top-level statements as its entry point, which the
+      test SDK's auto-generated Main correctly defers to (CS7022).
+      xUnit/test files use literal strings and skip docs by design.
+    -->
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1861;CA1515;CS7022;xUnit1041</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Rerout.AspNetCore\Rerout.AspNetCore.csproj" />
+  </ItemGroup>
+
+</Project>

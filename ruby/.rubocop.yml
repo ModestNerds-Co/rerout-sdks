@@ -1,4 +1,4 @@
-require:
+plugins:
   - rubocop-rspec
   - rubocop-performance
 
@@ -31,19 +31,37 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Max: 30
 
-Metrics/AbcSize:
-  Max: 30
-
-Metrics/CyclomaticComplexity:
-  Max: 12
-
-Metrics/PerceivedComplexity:
-  Max: 12
-
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
     - '*.gemspec'
+
+# Request-body / model constructors mirror the API surface — keyword args map
+# 1:1 to documented fields, so a long keyword list is intentional, not a smell.
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+# `to_h` / `from_hash` are flat field-mapping methods: each branch handles one
+# documented field. Splitting them would hurt readability, not help it.
+Metrics/AbcSize:
+  Max: 30
+  Exclude:
+    - 'lib/rerout/create_link_input.rb'
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+  Exclude:
+    - 'lib/rerout/models.rb'
+
+Metrics/PerceivedComplexity:
+  Max: 12
+  Exclude:
+    - 'lib/rerout/models.rb'
+
+# Development dependencies are declared in the gemspec so a single
+# `bundle install` resolves everything for contributors.
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
 
 Naming/AccessorMethodName:
   Enabled: false

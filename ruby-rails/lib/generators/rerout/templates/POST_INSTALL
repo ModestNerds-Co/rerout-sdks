@@ -1,0 +1,24 @@
+
+  Rerout is installed.
+
+  1. Set your credentials (environment variables or Rails credentials):
+
+       REROUT_API_KEY=rrk_...
+       REROUT_WEBHOOK_SECRET=whsec_...
+
+  2. Review config/initializers/rerout.rb.
+
+  3. The webhook receiver is mounted at:
+
+       POST /rerout/webhooks   (route name: rerout_webhook)
+
+     Point your Rerout dashboard endpoint at that URL.
+
+  4. Subscribe to delivery events anywhere in your app:
+
+       ActiveSupport::Notifications.subscribe('rerout.webhook') do |event|
+         Rails.logger.info("Rerout webhook: #{event.payload[:event]}")
+       end
+
+  Use the API client with Rerout::Rails.client. Docs: https://rerout.co/docs
+

@@ -77,7 +77,7 @@ func (l *Links) Update(ctx context.Context, code string, input UpdateLinkInput) 
 			Code:    CodeBadRequest,
 			Status:  0,
 			Message: "rerout: UpdateLinkInput has no fields to send.",
-			Path:    "/v1/links/" + code,
+			Path:    "/v1/links/" + url.PathEscape(code),
 		}
 	}
 	var out Link

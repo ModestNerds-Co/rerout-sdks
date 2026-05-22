@@ -4,8 +4,9 @@ using System.Net.Http;
 namespace Rerout;
 
 /// <summary>
-/// Configuration for <see cref="ReroutClient"/>. All fields except <see cref="ApiKey"/>
-/// are optional and have sensible production defaults.
+/// Configuration for <see cref="ReroutClient"/>. The API key is supplied to the
+/// <see cref="ReroutClient"/> constructor directly; every field here is optional
+/// and has a sensible production default.
 /// </summary>
 public sealed record ReroutClientOptions
 {

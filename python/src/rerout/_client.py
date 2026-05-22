@@ -42,9 +42,9 @@ class Rerout:
         >>> print(link.short_url)
     """
 
-    links: "Links"
-    project: "Project"
-    qr: "Qr"
+    links: Links
+    project: Project
+    qr: Qr
 
     def __init__(
         self,
@@ -100,7 +100,7 @@ class Rerout:
         if self._owns_client:
             self._client.close()
 
-    def __enter__(self) -> "Rerout":
+    def __enter__(self) -> Rerout:
         return self
 
     def __exit__(self, *_: object) -> None:

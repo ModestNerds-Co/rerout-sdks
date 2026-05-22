@@ -20,10 +20,10 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.0.0'
 
   spec.metadata = {
-    'homepage_uri'      => spec.homepage,
-    'source_code_uri'   => 'https://github.com/ModestNerds-Co/rerout-sdks/tree/main/ruby',
-    'changelog_uri'     => 'https://github.com/ModestNerds-Co/rerout-sdks/blob/main/ruby/CHANGELOG.md',
-    'bug_tracker_uri'   => 'https://github.com/ModestNerds-Co/rerout-sdks/issues',
+    'homepage_uri' => spec.homepage,
+    'source_code_uri' => 'https://github.com/ModestNerds-Co/rerout-sdks/tree/main/ruby',
+    'changelog_uri' => 'https://github.com/ModestNerds-Co/rerout-sdks/blob/main/ruby/CHANGELOG.md',
+    'bug_tracker_uri' => 'https://github.com/ModestNerds-Co/rerout-sdks/issues',
     'documentation_uri' => 'https://rerout.co/docs',
     'rubygems_mfa_required' => 'true'
   }
@@ -40,11 +40,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'faraday', '~> 2.0'
 
-  spec.add_development_dependency 'faraday-net_http', '~> 3.0'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.12'
   spec.add_development_dependency 'rubocop', '~> 1.60'
   spec.add_development_dependency 'rubocop-performance', '~> 1.20'
   spec.add_development_dependency 'rubocop-rspec', '~> 3.0'
-  spec.add_development_dependency 'webmock', '~> 3.20'
 end

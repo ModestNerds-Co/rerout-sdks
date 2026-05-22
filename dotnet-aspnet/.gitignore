@@ -1,0 +1,29 @@
+# .NET build output
+bin/
+obj/
+out/
+
+# IDE / tool files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Local NuGet
+*.nupkg
+*.snupkg
+
+# Local config
+*.local.json
+*.env
+
+# OS noise
+.DS_Store
+Thumbs.db

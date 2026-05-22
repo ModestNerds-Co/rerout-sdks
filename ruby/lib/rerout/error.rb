@@ -47,9 +47,13 @@ module Rerout
       status >= 500 && status < 600
     end
 
-    def to_s
-      "Rerout::Error(code: #{code}, status: #{status}, message: #{message}, " \
-        "path: #{path.inspect}, timestamp: #{timestamp.inspect})"
+    # A developer-friendly description. Kept separate from {#message} (the raw
+    # human message) so logging the error shows the structured fields without
+    # the bare message losing them.
+    def inspect
+      "#<Rerout::Error code=#{code.inspect} status=#{status} " \
+        "message=#{message.inspect} path=#{path.inspect} " \
+        "timestamp=#{timestamp.inspect}>"
     end
   end
 end

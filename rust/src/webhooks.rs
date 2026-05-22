@@ -37,7 +37,7 @@ pub const DEFAULT_TOLERANCE_SECONDS: i64 = 300;
 /// # Example
 ///
 /// ```
-/// use rerout::webhooks::{verify_signature, DEFAULT_TOLERANCE_SECONDS};
+/// use rerout::webhooks::{verify_rerout_signature, DEFAULT_TOLERANCE_SECONDS};
 /// # use hmac::{Hmac, Mac};
 /// # use sha2::Sha256;
 /// # type HmacSha256 = Hmac<Sha256>;
@@ -48,7 +48,7 @@ pub const DEFAULT_TOLERANCE_SECONDS: i64 = 300;
 /// # mac.update(format!("{ts}.{body}").as_bytes());
 /// # let sig = hex::encode(mac.finalize().into_bytes());
 /// let header = format!("t={ts},v1={sig}");
-/// let ok = verify_signature(
+/// let ok = verify_rerout_signature(
 ///     body,
 ///     &header,
 ///     secret,
@@ -57,7 +57,7 @@ pub const DEFAULT_TOLERANCE_SECONDS: i64 = 300;
 /// );
 /// assert!(ok);
 /// ```
-pub fn verify_signature(
+pub fn verify_rerout_signature(
     raw_body: &str,
     signature_header: &str,
     secret: &str,
