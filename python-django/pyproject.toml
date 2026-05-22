@@ -51,12 +51,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# ``rerout`` is pinned to the sibling source checkout so the test suite runs
-# against the local base SDK rather than whatever is published to PyPI.
-# ``{root:uri}`` is expanded by Hatchling to the file:// URI of this package
-# directory. Install with ``pip install -e ".[dev]"`` from this directory.
+# For local monorepo development, install the sibling base SDK first:
+#   pip install -e ../python
+#   pip install -e ".[dev]"
+# A direct file:// reference is intentionally NOT used here — PyPI rejects any
+# direct-URL dependency in published metadata, even inside an extra.
 dev = [
-    "rerout @ {root:uri}/../python",
     "pytest>=8.0",
     "pytest-django>=4.8",
     "respx>=0.21",
@@ -64,9 +64,6 @@ dev = [
     "django-stubs>=5.0",
     "ruff>=0.5",
 ]
-
-[tool.hatch.metadata]
-allow-direct-references = true
 
 [project.urls]
 Homepage = "https://rerout.co"

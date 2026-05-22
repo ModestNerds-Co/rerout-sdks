@@ -1,0 +1,88 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'co.rerout'
+version = '0.1.0'
+description = 'Official Java SDK for the Rerout branded-link API.'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JSON: Gson — small (~280 KB), zero transitive dependencies, no annotations
+    // required to (de)serialize plain Java records. Jackson would pull three
+    // jars (core/databind/annotations); Gson keeps the dependency footprint to
+    // a single artifact, which suits a thin SDK.
+    api 'com.google.code.gson:gson:2.11.0'
+
+    testImplementation platform('org.junit:junit-bom:5.11.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    // Compile against Java 17 bytecode regardless of the JDK running Gradle.
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release.set(17)
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-processing']
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+    // The SDK documents every public member; keep Javadoc lint quiet on the
+    // few intentional omissions rather than failing the build.
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifactId = 'rerout-java'
+
+            pom {
+                name = 'Rerout Java SDK'
+                description = 'Official Java SDK for the Rerout branded-link API.'
+                url = 'https://github.com/ModestNerds-Co/rerout-sdks'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'codecraft-solutions'
+                        name = 'Codecraft Solutions'
+                        email = 'hello@codecraftsolutions.co.za'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/ModestNerds-Co/rerout-sdks.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/ModestNerds-Co/rerout-sdks.git'
+                    url = 'https://github.com/ModestNerds-Co/rerout-sdks'
+                }
+            }
+        }
+    }
+}

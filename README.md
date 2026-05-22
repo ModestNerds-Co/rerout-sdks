@@ -23,6 +23,7 @@ Each SDK is hand-written to feel native in its language. They all wrap the same 
 | Rust            | `rerout`                      | [`rust/`](./rust)               | v0.1 — preview |
 | Ruby            | `rerout`                      | [`ruby/`](./ruby)               | v0.1 — preview |
 | Kotlin / JVM    | `co.rerout:rerout-kotlin`     | [`kotlin/`](./kotlin)           | v0.1 — preview |
+| Java / JVM      | `co.rerout:rerout-java`       | [`java/`](./java)               | v0.1 — preview |
 | C# / .NET       | `Rerout`                      | [`dotnet/`](./dotnet)           | v0.1 — preview |
 
 ### Framework integrations
