@@ -2,7 +2,6 @@
     "name": "rerout/laravel",
     "description": "Laravel integration for the Rerout branded-link API — service provider, facade, config, webhook controller, and events.",
     "type": "library",
-    "version": "0.1.0",
     "license": "MIT",
     "keywords": [
         "rerout",
@@ -37,12 +36,6 @@
         "phpstan/phpstan": "^1.10",
         "friendsofphp/php-cs-fixer": "^3.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../php"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Rerout\\Laravel\\": "src/"
