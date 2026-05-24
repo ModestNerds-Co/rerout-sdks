@@ -1,6 +1,8 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'java-library'
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish' version '0.30.0'
 }
 
 group = 'co.rerout'
@@ -27,8 +29,6 @@ java {
     // Compile against Java 17 bytecode regardless of the JDK running Gradle.
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-    withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -54,35 +54,34 @@ test {
     }
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-            artifactId = 'rerout-java'
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, true)
+    signAllPublications()
 
-            pom {
-                name = 'Rerout Java SDK'
-                description = 'Official Java SDK for the Rerout branded-link API.'
-                url = 'https://github.com/ModestNerds-Co/rerout-sdks'
-                licenses {
-                    license {
-                        name = 'MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'codecraft-solutions'
-                        name = 'Codecraft Solutions'
-                        email = 'hello@codecraftsolutions.co.za'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:https://github.com/ModestNerds-Co/rerout-sdks.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/ModestNerds-Co/rerout-sdks.git'
-                    url = 'https://github.com/ModestNerds-Co/rerout-sdks'
-                }
+    coordinates('co.rerout', 'rerout-java', '0.1.0')
+
+    pom {
+        name = 'Rerout Java SDK'
+        description = 'Official Java SDK for the Rerout branded-link API.'
+        inceptionYear = '2026'
+        url = 'https://github.com/ModestNerds-Co/rerout-sdks'
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
             }
+        }
+        developers {
+            developer {
+                id = 'codecraft'
+                name = 'Codecraft Solutions'
+                email = 'hello@codecraftsolutions.co.za'
+            }
+        }
+        scm {
+            connection = 'scm:git:https://github.com/ModestNerds-Co/rerout-sdks.git'
+            developerConnection = 'scm:git:ssh://git@github.com/ModestNerds-Co/rerout-sdks.git'
+            url = 'https://github.com/ModestNerds-Co/rerout-sdks'
         }
     }
 }

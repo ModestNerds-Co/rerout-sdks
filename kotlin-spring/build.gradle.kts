@@ -1,10 +1,11 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.spring") version "2.0.21"
     `java-library`
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 group = "co.rerout"
@@ -44,8 +45,6 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 kotlin {
@@ -65,37 +64,36 @@ tasks.test {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifactId = "rerout-spring-boot-starter"
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    signAllPublications()
 
-            pom {
-                name.set("Rerout Spring Boot Starter")
-                description.set(
-                    "Spring Boot auto-configuration for the Rerout branded-link API.",
-                )
-                url.set("https://github.com/ModestNerds-Co/rerout-sdks")
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("codecraft-solutions")
-                        name.set("Codecraft Solutions")
-                        email.set("hello@codecraftsolutions.co.za")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:https://github.com/ModestNerds-Co/rerout-sdks.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/ModestNerds-Co/rerout-sdks.git")
-                    url.set("https://github.com/ModestNerds-Co/rerout-sdks")
-                }
+    coordinates("co.rerout", "rerout-spring-boot-starter", "0.1.0")
+
+    pom {
+        name.set("Rerout Spring Boot Starter")
+        description.set(
+            "Spring Boot auto-configuration for the Rerout branded-link API.",
+        )
+        inceptionYear.set("2026")
+        url.set("https://github.com/ModestNerds-Co/rerout-sdks")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
             }
+        }
+        developers {
+            developer {
+                id.set("codecraft")
+                name.set("Codecraft Solutions")
+                email.set("hello@codecraftsolutions.co.za")
+            }
+        }
+        scm {
+            connection.set("scm:git:https://github.com/ModestNerds-Co/rerout-sdks.git")
+            developerConnection.set("scm:git:ssh://git@github.com/ModestNerds-Co/rerout-sdks.git")
+            url.set("https://github.com/ModestNerds-Co/rerout-sdks")
         }
     }
 }
