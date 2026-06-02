@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "rerout-django"
-version = "0.1.0"
+version = "0.2.0"
 description = "Official Django integration for the Rerout branded-link API."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -46,7 +46,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "rerout>=0.1,<1.0",
+    "rerout>=0.2,<1.0",
     "django>=4.2,<6.0",
 ]
 

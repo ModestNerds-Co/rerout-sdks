@@ -110,6 +110,10 @@ let input = UpdateLinkInput::new()
 An empty `UpdateLinkInput` is rejected client-side — `links().update` returns a
 `bad_request` configuration error without hitting the API.
 
+Each returned `Link` carries a read-only `tags` field — a `Vec<Tag>` where every
+`Tag` has an `id`, `name`, and `color`. It is empty on `create` and populated by
+`get`, `list`, and `update`. Tag writes are ignored for API-key clients.
+
 ### Project
 
 ```rust,no_run

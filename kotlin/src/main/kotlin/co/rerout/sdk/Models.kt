@@ -11,6 +11,22 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * A tag attached to a [Link].
+ *
+ * Tags are read-only for API-key clients: they surface on link responses but
+ * cannot be written through `create`/`update`.
+ */
+@Serializable
+public data class Tag(
+    /** Tag identifier. */
+    val id: String,
+    /** Human-readable tag name. */
+    val name: String,
+    /** Display color — typically a hex string such as `#3b82f6`. */
+    val color: String,
+)
+
+/**
  * A short link as returned by the Rerout API.
  *
  * Field names mirror the server-side `LinkResponse` shape so JSON is parsed
@@ -48,6 +64,12 @@ public data class Link(
     @SerialName("created_at") val createdAt: Long,
     /** Unix seconds — last mutation. */
     @SerialName("updated_at") val updatedAt: Long,
+    /**
+     * Tags attached to this link. Read-only — populated on reads and after a
+     * `create`/`update`, empty when none are set. Defaults to empty so older
+     * payloads without a `tags` field still parse.
+     */
+    val tags: List<Tag> = emptyList(),
 )
 
 /**

@@ -5,6 +5,15 @@ documented in this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-02
+
+### Changed
+
+- Bumped the base `co.rerout:rerout-kotlin` dependency to `0.2.0`, which adds
+  the read-only `tags` field (`{ id, name, color }`) to `Link`. The starter
+  re-exports the base SDK models unchanged, so consumers pick up `Link.tags`
+  transitively with no API change here.
+
 ## [0.1.0] - 2026-05-22
 
 ### Added
@@ -27,4 +36,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `maven-publish` configuration targeting Maven Central as
   `co.rerout:rerout-spring-boot-starter`, with sources and javadoc jars.
 
+[0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin-spring-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin-spring-v0.1.0

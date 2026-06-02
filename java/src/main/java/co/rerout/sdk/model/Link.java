@@ -8,6 +8,8 @@
 package co.rerout.sdk.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -62,6 +64,8 @@ public final class Link {
     @SerializedName("updated_at")
     private final long updatedAt;
 
+    private final List<Tag> tags;
+
     /**
      * Creates a {@code Link}. Normally constructed by the SDK's JSON decoder;
      * exposed for tests and manual construction.
@@ -81,6 +85,8 @@ public final class Link {
      * @param seoUpdatedAt    last SEO field change in unix seconds, or {@code null}
      * @param createdAt       link creation time in unix seconds
      * @param updatedAt       last mutation time in unix seconds
+     * @param tags            tags attached to the link; a {@code null} value is
+     *                        normalised to an empty list
      */
     public Link(
             String code,
@@ -97,7 +103,8 @@ public final class Link {
             boolean seoNoindex,
             Long seoUpdatedAt,
             long createdAt,
-            long updatedAt) {
+            long updatedAt,
+            List<Tag> tags) {
         this.code = code;
         this.shortUrl = shortUrl;
         this.domainHostname = domainHostname;
@@ -113,6 +120,7 @@ public final class Link {
         this.seoUpdatedAt = seoUpdatedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.tags = tags == null ? Collections.emptyList() : tags;
     }
 
     /** {@return the short link path code} */
@@ -190,6 +198,18 @@ public final class Link {
         return updatedAt;
     }
 
+    /**
+     * {@return the tags attached to this link; never {@code null}}
+     *
+     * <p>Read-only: tag writes are not accepted from API-key clients. A missing
+     * or {@code null} {@code tags} field in the response is normalised to an
+     * empty list, and {@link co.rerout.sdk.Links#create create} returns an
+     * empty list since newly created links carry no tags.
+     */
+    public List<Tag> getTags() {
+        return tags == null ? Collections.emptyList() : tags;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -213,7 +233,8 @@ public final class Link {
                 && Objects.equals(seoDescription, other.seoDescription)
                 && Objects.equals(seoImageUrl, other.seoImageUrl)
                 && Objects.equals(seoCanonicalUrl, other.seoCanonicalUrl)
-                && Objects.equals(seoUpdatedAt, other.seoUpdatedAt);
+                && Objects.equals(seoUpdatedAt, other.seoUpdatedAt)
+                && Objects.equals(getTags(), other.getTags());
     }
 
     @Override
@@ -221,7 +242,7 @@ public final class Link {
         return Objects.hash(
                 code, shortUrl, domainHostname, targetUrl, projectId, expiresAt,
                 active, seoTitle, seoDescription, seoImageUrl, seoCanonicalUrl,
-                seoNoindex, seoUpdatedAt, createdAt, updatedAt);
+                seoNoindex, seoUpdatedAt, createdAt, updatedAt, getTags());
     }
 
     @Override

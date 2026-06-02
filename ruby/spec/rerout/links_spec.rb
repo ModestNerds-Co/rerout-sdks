@@ -10,6 +10,7 @@ RSpec.describe Rerout::Resources::Links do
       'project_id' => 'p1', 'expires_at' => nil, 'is_active' => true,
       'seo_title' => 'Sale', 'seo_description' => nil, 'seo_image_url' => nil,
       'seo_canonical_url' => nil, 'seo_noindex' => false, 'seo_updated_at' => nil,
+      'tags' => [{ 'id' => 't1', 'name' => 'launch', 'color' => '#ff8800' }],
       'created_at' => 1_700_000_000, 'updated_at' => 1_700_000_000
     }
   end
@@ -104,6 +105,28 @@ RSpec.describe Rerout::Resources::Links do
       link = client.links.get('q4')
       expect(recorded.first.url.path).to eq('/v1/links/q4')
       expect(link.code).to eq('q4')
+    end
+
+    it 'parses the tags array into Tag models' do
+      client, = build_client do |stubs, rec|
+        stub_endpoint(stubs, rec, method: :get, path: '/v1/links/q4',
+                                  body: JSON.generate(link_payload))
+      end
+      link = client.links.get('q4')
+      expect(link.tags).to all(be_a(Rerout::Models::Tag))
+      tag = link.tags.first
+      expect(tag.id).to eq('t1')
+      expect(tag.name).to eq('launch')
+      expect(tag.color).to eq('#ff8800')
+    end
+
+    it 'defaults tags to an empty array when the key is absent' do
+      payload = link_payload.except('tags')
+      client, = build_client do |stubs, rec|
+        stub_endpoint(stubs, rec, method: :get, path: '/v1/links/q4',
+                                  body: JSON.generate(payload))
+      end
+      expect(client.links.get('q4').tags).to eq([])
     end
 
     it 'raises ArgumentError on a blank code' do

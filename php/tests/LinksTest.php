@@ -12,6 +12,7 @@ use Rerout\Models\Link;
 use Rerout\Models\LinkStats;
 use Rerout\Models\ListLinksResult;
 use Rerout\Models\ProjectStats;
+use Rerout\Models\Tag;
 use Rerout\Models\UpdateLinkInput;
 use Rerout\Resources\Links;
 use Rerout\Resources\Project;
@@ -26,6 +27,7 @@ use Rerout\Resources\Project;
 #[CoversClass(LinkStats::class)]
 #[CoversClass(ListLinksResult::class)]
 #[CoversClass(ProjectStats::class)]
+#[CoversClass(Tag::class)]
 #[CoversClass(CreateLinkInput::class)]
 #[CoversClass(UpdateLinkInput::class)]
 final class LinksTest extends TestCase
@@ -151,6 +153,30 @@ final class LinksTest extends TestCase
         self::assertSame('GET', $request->getMethod());
         self::assertSame('/v1/links/q4', $request->getUri()->getPath());
         self::assertSame('q4', $link->code);
+    }
+
+    public function testGetParsesTags(): void
+    {
+        $this->queueJson($this->linkPayload());
+
+        $link = $this->client()->links()->get('q4');
+
+        self::assertCount(1, $link->tags);
+        self::assertContainsOnlyInstancesOf(Tag::class, $link->tags);
+        self::assertSame('tag_1', $link->tags[0]->id);
+        self::assertSame('marketing', $link->tags[0]->name);
+        self::assertSame('#ff0000', $link->tags[0]->color);
+    }
+
+    public function testGetDefaultsToEmptyTagsWhenAbsent(): void
+    {
+        $payload = $this->linkPayload();
+        unset($payload['tags']);
+        $this->queueJson($payload);
+
+        $link = $this->client()->links()->get('q4');
+
+        self::assertSame([], $link->tags);
     }
 
     public function testGetErrorPathThrowsReroutException(): void
@@ -488,6 +514,9 @@ final class LinksTest extends TestCase
             'seo_updated_at' => null,
             'created_at' => 1_700_000_000,
             'updated_at' => 1_700_000_000,
+            'tags' => [
+                ['id' => 'tag_1', 'name' => 'marketing', 'color' => '#ff0000'],
+            ],
         ];
     }
 

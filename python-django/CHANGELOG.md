@@ -4,6 +4,15 @@ All notable changes to `rerout-django` are documented in this file. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-02
+
+### Changed
+
+- Requires `rerout>=0.2`, which adds the read-only `tags` field (a tuple of
+  `Tag` objects with `id`, `name`, and `color`) to every `Link`. This
+  wrapper re-exports the base SDK's client, so the new field is available
+  through `get_rerout_client()` with no API changes here.
+
 ## [0.1.0] - 2026-05-22
 
 ### Added
@@ -28,4 +37,5 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for type-specific subscription.
 - PEP 561 marker (`py.typed`) — full type hints.
 
+[0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.1.0

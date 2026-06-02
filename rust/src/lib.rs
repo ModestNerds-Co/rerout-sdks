@@ -64,7 +64,7 @@ pub use error::{ApiErrorDetails, ReroutError, Result};
 pub use links::Links;
 pub use models::{
     CreateLinkInput, DailyClicksPoint, DeleteLinkResult, Link, LinkStats, ListLinksParams,
-    ListLinksResult, ProjectInfo, ProjectStats, QrEcc, QrOptions, QrRefresh, StatsBreakdown,
+    ListLinksResult, ProjectInfo, ProjectStats, QrEcc, QrOptions, QrRefresh, StatsBreakdown, Tag,
     UpdateLinkInput,
 };
 pub use project::Project;

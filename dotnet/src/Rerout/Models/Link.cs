@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Rerout.Models;
@@ -64,4 +65,8 @@ public sealed record Link
     /// <summary>Unix seconds — last mutation.</summary>
     [JsonPropertyName("updated_at")]
     public required long UpdatedAt { get; init; }
+
+    /// <summary>Read-only tags attached to the link. Empty when none are set.</summary>
+    [JsonPropertyName("tags")]
+    public IReadOnlyList<Tag> Tags { get; init; } = [];
 }

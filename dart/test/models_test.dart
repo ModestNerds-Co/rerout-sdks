@@ -173,6 +173,10 @@ void main() {
         'seo_image_url': 'https://img',
         'seo_canonical_url': 'https://c',
         'seo_updated_at': 1700000050,
+        'tags': [
+          {'id': 'tag_1', 'name': 'Launch', 'color': '#FF8800'},
+          {'id': 'tag_2', 'name': 'Sale', 'color': '#00AAFF'},
+        ],
       });
       expect(link.code, 'q4');
       expect(link.shortUrl, 'https://rerout.co/q4');
@@ -182,6 +186,24 @@ void main() {
       expect(link.isActive, isTrue);
       expect(link.seoNoindex, isFalse);
       expect(link.seoTitle, 't');
+      expect(link.tags.length, 2);
+      expect(link.tags.first.id, 'tag_1');
+      expect(link.tags.first.name, 'Launch');
+      expect(link.tags.first.color, '#FF8800');
+    });
+
+    test('defaults tags to an empty list when absent', () {
+      final link = ShortLink.fromJson({
+        'code': 'q4',
+        'short_url': 'https://rerout.co/q4',
+        'target_url': 'https://example.com',
+        'project_id': 'prj_test',
+        'is_active': true,
+        'seo_noindex': true,
+        'created_at': 1700000000,
+        'updated_at': 1700000100,
+      });
+      expect(link.tags, isEmpty);
     });
   });
 

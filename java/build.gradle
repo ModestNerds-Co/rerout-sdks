@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'co.rerout'
-version = '0.1.0'
+version = '0.2.0'
 description = 'Official Java SDK for the Rerout branded-link API.'
 
 repositories {
@@ -58,7 +58,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, true)
     signAllPublications()
 
-    coordinates('co.rerout', 'rerout-java', '0.1.0')
+    coordinates('co.rerout', 'rerout-java', '0.2.0')
 
     pom {
         name = 'Rerout Java SDK'

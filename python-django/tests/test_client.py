@@ -148,7 +148,7 @@ def test_tolerance_zero_respected() -> None:
 def test_version_exposed() -> None:
     import rerout_django
 
-    assert rerout_django.__version__ == "0.1.0"
+    assert rerout_django.__version__ == "0.2.0"
 
 
 def test_app_config_label() -> None:

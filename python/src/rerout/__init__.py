@@ -31,6 +31,7 @@ from ._models import (
     ProjectStats,
     QrOptions,
     StatsBreakdown,
+    Tag,
     UpdateLinkInput,
 )
 from ._webhooks import (
@@ -38,7 +39,7 @@ from ._webhooks import (
     verify_rerout_signature,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "DEFAULT_BASE_URL",
@@ -59,6 +60,7 @@ __all__ = [
     "Rerout",
     "ReroutError",
     "StatsBreakdown",
+    "Tag",
     "UpdateLinkInput",
     "__version__",
     "verify_rerout_signature",

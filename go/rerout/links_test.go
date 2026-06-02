@@ -85,8 +85,8 @@ func TestLinks_List_Success(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{
 		  "links":[
-		    {"code":"a","short_url":"https://rerout.co/a","target_url":"https://x.com","project_id":"p","is_active":true,"seo_noindex":false,"created_at":1,"updated_at":2},
-		    {"code":"b","short_url":"https://rerout.co/b","target_url":"https://y.com","project_id":"p","is_active":false,"seo_noindex":true,"created_at":3,"updated_at":4}
+		    {"code":"a","short_url":"https://rerout.co/a","target_url":"https://x.com","project_id":"p","is_active":true,"seo_noindex":false,"tags":[{"id":"tag_1","name":"campaign","color":"#ff8800"}],"created_at":1,"updated_at":2},
+		    {"code":"b","short_url":"https://rerout.co/b","target_url":"https://y.com","project_id":"p","is_active":false,"seo_noindex":true,"tags":[],"created_at":3,"updated_at":4}
 		  ],
 		  "next_cursor":99
 		}`))
@@ -103,6 +103,12 @@ func TestLinks_List_Success(t *testing.T) {
 	}
 	if res.Links[0].Code != "a" || res.Links[1].Code != "b" {
 		t.Errorf("codes = %q,%q", res.Links[0].Code, res.Links[1].Code)
+	}
+	if len(res.Links[0].Tags) != 1 || res.Links[0].Tags[0].Name != "campaign" {
+		t.Errorf("Links[0].Tags = %+v, want one campaign tag", res.Links[0].Tags)
+	}
+	if len(res.Links[1].Tags) != 0 {
+		t.Errorf("Links[1].Tags = %+v, want empty", res.Links[1].Tags)
 	}
 	if !res.HasMore() {
 		t.Error("HasMore() = false, want true")
@@ -175,6 +181,18 @@ func TestLinks_Get_Success(t *testing.T) {
 	}
 	if link.Code != "q4" {
 		t.Errorf("Code = %q, want q4", link.Code)
+	}
+	if len(link.Tags) != 1 {
+		t.Fatalf("len(Tags) = %d, want 1", len(link.Tags))
+	}
+	if link.Tags[0].ID != "tag_1" {
+		t.Errorf("Tags[0].ID = %q, want tag_1", link.Tags[0].ID)
+	}
+	if link.Tags[0].Name != "campaign" {
+		t.Errorf("Tags[0].Name = %q, want campaign", link.Tags[0].Name)
+	}
+	if link.Tags[0].Color != "#ff8800" {
+		t.Errorf("Tags[0].Color = %q, want #ff8800", link.Tags[0].Color)
 	}
 }
 

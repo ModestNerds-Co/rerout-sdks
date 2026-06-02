@@ -5,18 +5,49 @@ module Rerout
   # frozen struct-like class with `from_hash` for JSON ingestion and value
   # equality semantics.
   module Models
+    # A label attached to a link — `{ id:, name:, color: }`. Read-only; the API
+    # ignores tag writes for API-key clients.
+    class Tag
+      attr_reader :id, :name, :color
+
+      def initialize(id:, name:, color:)
+        @id = id
+        @name = name
+        @color = color
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(id: hash['id'], name: hash['name'], color: hash['color'])
+      end
+
+      def to_h
+        { id: id, name: name, color: color }
+      end
+
+      def ==(other)
+        other.is_a?(Tag) && other.id == id && other.name == name && other.color == color
+      end
+      alias eql? ==
+
+      def hash
+        [self.class, id, name, color].hash
+      end
+    end
+
     # A short link.
     class Link
       ATTRS = %i[
         code short_url domain_hostname target_url project_id expires_at
         is_active seo_title seo_description seo_image_url seo_canonical_url
-        seo_noindex seo_updated_at created_at updated_at
+        seo_noindex seo_updated_at tags created_at updated_at
       ].freeze
 
       attr_reader(*ATTRS)
 
       def initialize(**attrs)
         ATTRS.each { |k| instance_variable_set(:"@#{k}", attrs[k]) }
+        @tags = (@tags || []).freeze
         freeze
       end
 
@@ -35,13 +66,16 @@ module Rerout
           seo_canonical_url: hash['seo_canonical_url'],
           seo_noindex: hash.fetch('seo_noindex', true),
           seo_updated_at: hash['seo_updated_at'],
+          tags: (hash['tags'] || []).map { |t| Tag.from_hash(t) },
           created_at: hash['created_at'],
           updated_at: hash['updated_at']
         )
       end
 
       def to_h
-        ATTRS.to_h { |k| [k, public_send(k)] }
+        ATTRS.to_h do |k|
+          [k, k == :tags ? tags.map(&:to_h) : public_send(k)]
+        end
       end
 
       def ==(other)

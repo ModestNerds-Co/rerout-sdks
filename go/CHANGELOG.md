@@ -5,6 +5,19 @@ format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-02
+
+### Added
+
+- Read-only `Tags` field on `Link` (`{id, name, color}`), returned by
+  `Links().Get`, `Links().List`, and `Links().Update`. Tags cannot be written
+  via the API-key client.
+
+### Changed
+
+- The project stats endpoint `/v1/projects/me/stats` (used by
+  `Project().Stats`) is now live.
+
 ## [0.1.0] - 2026-05-22
 
 ### Added
@@ -30,4 +43,5 @@ and this project adheres to
 - Pointer helpers `String`, `Int`, `Int64`, `Bool` for optional struct fields.
 - Standard-library only — no third-party dependencies.
 
+[0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.1.0

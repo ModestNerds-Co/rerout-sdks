@@ -23,25 +23,29 @@ const SAMPLE_LINK: Link = {
   seo_canonical_url: null,
   seo_noindex: true,
   seo_updated_at: null,
+  tags: [{ id: 'tag_1', name: 'campaign', color: '#ff8800' }],
   created_at: 1_700_000_000,
   updated_at: 1_700_000_000,
 }
 
 describe('Links', () => {
-  it('create posts to /v1/links and returns Link', async () => {
+  it('create posts to /v1/links and returns Link with empty tags', async () => {
+    // The API returns an empty `tags` array on create.
+    const created: Link = { ...SAMPLE_LINK, tags: [] }
     const fetchImpl = makeFetch((url, init) => {
       expect(url).toBe('https://api.rerout.co/v1/links')
       expect(init.method).toBe('POST')
       const body = JSON.parse(init.body as string)
       expect(body.target_url).toBe('https://example.com')
-      return new Response(JSON.stringify(SAMPLE_LINK), {
+      return new Response(JSON.stringify(created), {
         status: 201,
         headers: { 'content-type': 'application/json' },
       })
     })
     const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
     const link = await r.links.create({ target_url: 'https://example.com' })
-    expect(link).toEqual(SAMPLE_LINK)
+    expect(link).toEqual(created)
+    expect(link.tags).toEqual([])
   })
 
   it('list passes cursor + limit as query params', async () => {
@@ -68,7 +72,8 @@ describe('Links', () => {
       })
     })
     const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
-    await r.links.get('go/promo')
+    const link = await r.links.get('go/promo')
+    expect(link.tags).toEqual([{ id: 'tag_1', name: 'campaign', color: '#ff8800' }])
   })
 
   it('update patches with only provided fields', async () => {

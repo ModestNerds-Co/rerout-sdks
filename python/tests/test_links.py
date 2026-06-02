@@ -16,6 +16,7 @@ from rerout import (
     ProjectStats,
     Rerout,
     ReroutError,
+    Tag,
     UpdateLinkInput,
 )
 
@@ -118,6 +119,42 @@ def test_get_success(mock_api: respx.MockRouter, client: Rerout) -> None:
     )
     link = client.links.get("q4")
     assert link.code == "q4"
+
+
+def test_get_parses_tags(mock_api: respx.MockRouter, client: Rerout) -> None:
+    mock_api.get("/v1/links/q4").mock(
+        return_value=httpx.Response(
+            200,
+            json=sample_link(
+                tags=[{"id": "tag_42", "name": "promo", "color": "#00ff00"}]
+            ),
+        )
+    )
+    link = client.links.get("q4")
+    assert len(link.tags) == 1
+    tag = link.tags[0]
+    assert isinstance(tag, Tag)
+    assert tag.id == "tag_42"
+    assert tag.name == "promo"
+    assert tag.color == "#00ff00"
+
+
+def test_get_tags_default_empty_when_absent(
+    mock_api: respx.MockRouter, client: Rerout
+) -> None:
+    payload = sample_link()
+    del payload["tags"]
+    mock_api.get("/v1/links/q4").mock(return_value=httpx.Response(200, json=payload))
+    link = client.links.get("q4")
+    assert link.tags == ()
+
+
+def test_create_tags_empty_array(mock_api: respx.MockRouter, client: Rerout) -> None:
+    mock_api.post("/v1/links").mock(
+        return_value=httpx.Response(200, json=sample_link(tags=[]))
+    )
+    link = client.links.create(CreateLinkInput(target_url="https://example.com"))
+    assert link.tags == ()
 
 
 def test_get_not_found(mock_api: respx.MockRouter, client: Rerout) -> None:

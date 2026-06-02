@@ -27,5 +27,6 @@ export type {
   ProjectStats,
   QrUrlOptions,
   StatsBreakdown,
+  Tag,
   UpdateLinkInput,
 } from './types.js'

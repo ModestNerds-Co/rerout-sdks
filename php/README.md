@@ -74,6 +74,11 @@ foreach ($result->links as $link) {
 
 $link = $rerout->links()->get('promo');
 
+// Read-only tags attached to the link. Empty array when none are bound.
+foreach ($link->tags as $tag) {
+    echo $tag->id, ' ', $tag->name, ' ', $tag->color, PHP_EOL;
+}
+
 $link = $rerout->links()->update('promo', new UpdateLinkInput(
     isActive: false,
 ));

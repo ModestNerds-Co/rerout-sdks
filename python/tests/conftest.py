@@ -51,6 +51,7 @@ def sample_link(**overrides: object) -> dict[str, object]:
         "seo_image_url": None,
         "seo_canonical_url": None,
         "seo_updated_at": None,
+        "tags": [{"id": "tag_1", "name": "campaign", "color": "#ff0000"}],
     }
     base.update(overrides)
     return base

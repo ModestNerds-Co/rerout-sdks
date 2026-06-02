@@ -18,14 +18,14 @@ Gradle (Kotlin DSL):
 
 ```kotlin
 dependencies {
-    implementation("co.rerout:rerout-kotlin:0.1.0")
+    implementation("co.rerout:rerout-kotlin:0.2.0")
 }
 ```
 
 Gradle (Groovy DSL):
 
 ```groovy
-implementation 'co.rerout:rerout-kotlin:0.1.0'
+implementation 'co.rerout:rerout-kotlin:0.2.0'
 ```
 
 Maven:
@@ -34,7 +34,7 @@ Maven:
 <dependency>
   <groupId>co.rerout</groupId>
   <artifactId>rerout-kotlin</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
@@ -99,6 +99,10 @@ if (page.hasMore) {
 
 // Get
 val one = rerout.links.get("sale")
+
+// Each link carries read-only `tags` — a list of { id, name, color }.
+// Empty when none are set; tags cannot be written through create/update.
+one.tags.forEach { println("${it.name} (${it.color})") }
 
 // Update — only the fields you set are sent. Use clear*() to set a field
 // to null on the server; an unset field is left untouched.

@@ -4,6 +4,12 @@
  * without transformation.
  */
 
+export interface Tag {
+  id: string
+  name: string
+  color: string
+}
+
 export interface Link {
   code: string
   short_url: string
@@ -18,6 +24,8 @@ export interface Link {
   seo_canonical_url: string | null
   seo_noindex: boolean
   seo_updated_at: number | null
+  /** Read-only. Tags attached to this link. Empty on create; populated on get/list/update. */
+  tags: Tag[]
   created_at: number
   updated_at: number
 }

@@ -69,6 +69,10 @@ await rerout.Links.DeleteAsync("q4");
 await rerout.Links.StatsAsync("q4", days: 30);
 ```
 
+Every `Link` carries a read-only `Tags` list of `Tag` records (`Id`, `Name`,
+`Color`); it is empty when the link has no tags. Tags are assigned in the
+Rerout dashboard — the API ignores tag writes from API-key clients.
+
 `UpdateLinkInput` uses `Optional<T>` to distinguish three states:
 
 ```csharp

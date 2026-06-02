@@ -110,6 +110,24 @@ class LinksTest {
     }
 
     @Test
+    fun `get parses the tags array`() = runTest {
+        server.enqueue(jsonResponse(SAMPLE_LINK_JSON))
+        val link = server.client().links.get("q4")
+        assertEquals(1, link.tags.size)
+        val tag = link.tags[0]
+        assertEquals("tag_1", tag.id)
+        assertEquals("Marketing", tag.name)
+        assertEquals("#3b82f6", tag.color)
+    }
+
+    @Test
+    fun `get defaults tags to empty when the field is absent`() = runTest {
+        server.enqueue(jsonResponse(SAMPLE_LINK_JSON_NO_TAGS))
+        val link = server.client().links.get("q4")
+        assertTrue(link.tags.isEmpty())
+    }
+
+    @Test
     fun `get surfaces a not found error`() {
         server.enqueue(jsonResponse("""{"code":"not_found","message":"no such link"}""", status = 404))
         val ex = assertThrows(ReroutException::class.java) {

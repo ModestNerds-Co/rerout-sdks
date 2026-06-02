@@ -62,6 +62,10 @@ rerout.links.delete(code)
 rerout.links.stats(code, days = 30)
 ```
 
+Every returned `Link` includes a read-only `tags` array of `{ id, name, color }`
+objects (empty on create; populated on get/list/update). Tag writes aren't
+supported for API-key clients.
+
 ### Project
 
 ```ts

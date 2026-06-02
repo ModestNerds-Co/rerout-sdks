@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "co.rerout"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -57,7 +57,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("co.rerout", "rerout-kotlin", "0.1.0")
+    coordinates("co.rerout", "rerout-kotlin", "0.2.0")
 
     pom {
         name.set("Rerout Kotlin SDK")

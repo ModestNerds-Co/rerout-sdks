@@ -3,6 +3,19 @@
 All notable changes to the `rerout` Dart package are documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.0 - 2026-06-02
+
+### Added
+
+- Read-only `tags` field on `ShortLink` — a list of `Tag` (`{id, name, color}`)
+  returned by `get`, `list`, and `update`. Empty on `create`. Parsed leniently
+  (defaults to an empty list when absent).
+- `Tag` model.
+
+### Notes
+
+- The project stats endpoint `/v1/projects/me/stats` is now live.
+
 ## 0.1.0 - 2026-05-20
 
 ### Added

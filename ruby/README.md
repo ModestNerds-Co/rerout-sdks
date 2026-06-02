@@ -82,6 +82,7 @@ page = rerout.links.list(cursor: page.next_cursor) if page.next_cursor
 
 # Get one
 link = rerout.links.get('q4')
+link.tags # => [Rerout::Models::Tag, ...] — read-only { id, name, color }
 
 # Update — only the fields you set are sent.
 rerout.links.update('q4', Rerout::UpdateLinkInput.new(is_active: false))

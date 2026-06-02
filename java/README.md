@@ -124,6 +124,12 @@ if (page.hasMore()) {
 // Get
 Link one = rerout.links().get("sale");
 
+// Read-only tags — populated by get/list/update, empty for a freshly
+// created link. getTags() never returns null.
+for (Tag tag : one.getTags()) {
+    System.out.println(tag.getName() + " (" + tag.getColor() + ")");
+}
+
 // Update — only the fields you set are sent. Use clear*() to set a field
 // to null on the server; an unset field is left untouched.
 Link updated = rerout.links().update("sale",

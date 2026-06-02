@@ -80,6 +80,23 @@ public sealed class LinksTests
         Assert.Equal("q4", link.Code);
         Assert.Equal(HttpMethod.Get, handler.Requests[0].Method);
         Assert.EndsWith("/v1/links/q4", handler.Requests[0].Uri.AbsolutePath, StringComparison.Ordinal);
+
+        var tag = Assert.Single(link.Tags);
+        Assert.Equal("tag_1", tag.Id);
+        Assert.Equal("campaign", tag.Name);
+        Assert.Equal("#ff8800", tag.Color);
+    }
+
+    [Fact]
+    public async Task Get_MissingTags_DefaultsToEmptyList()
+    {
+        var handler = StubHttpMessageHandler.Json(TestHelpers.SampleLinkJsonWithoutTags);
+        using var client = TestHelpers.ClientWith(handler);
+
+        var link = await client.Links.GetAsync("q4");
+
+        Assert.NotNull(link.Tags);
+        Assert.Empty(link.Tags);
     }
 
     [Fact]

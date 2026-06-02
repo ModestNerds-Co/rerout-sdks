@@ -575,6 +575,7 @@ const linkJSON = `{
   "project_id":"prj_1",
   "is_active":true,
   "seo_noindex":false,
+  "tags":[{"id":"tag_1","name":"campaign","color":"#ff8800"}],
   "created_at":1700000000,
   "updated_at":1700000100
 }`

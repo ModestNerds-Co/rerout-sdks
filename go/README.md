@@ -113,6 +113,10 @@ stats, err := client.Links().Stats(ctx, "q4", 7) // days; <= 0 defaults to 30
 An `UpdateLinkInput` with no field set and no `Clear*` flag is rejected
 client-side with code `bad_request` — it never hits the API.
 
+Every `Link` carries a read-only `Tags` field — a slice of `Tag`
+(`{ID, Name, Color}`) populated on `Get`, `List`, and `Update` (empty on
+`Create`). Tags cannot be written through the API-key client.
+
 ### Project
 
 ```go

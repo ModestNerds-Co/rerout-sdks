@@ -20,4 +20,5 @@ export 'rerout_exception.dart';
 export 'result.dart';
 export 'short_link.dart';
 export 'stats_breakdown.dart';
+export 'tag.dart';
 export 'update_link_request.dart';

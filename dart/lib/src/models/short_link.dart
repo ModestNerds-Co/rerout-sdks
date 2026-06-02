@@ -11,6 +11,7 @@
 //
 
 import 'package:meta/meta.dart';
+import 'package:rerout/src/models/tag.dart';
 
 /// A short link as returned by the Rerout API.
 @immutable
@@ -25,6 +26,7 @@ class ShortLink {
     required this.seoNoindex,
     required this.createdAt,
     required this.updatedAt,
+    this.tags = const [],
     this.domainHostname,
     this.expiresAt,
     this.seoTitle,
@@ -44,6 +46,11 @@ class ShortLink {
     seoNoindex: json['seo_noindex'] as bool? ?? true,
     createdAt: json['created_at'] as int,
     updatedAt: json['updated_at'] as int,
+    tags:
+        (json['tags'] as List<dynamic>? ?? const <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(Tag.fromJson)
+            .toList(growable: false),
     domainHostname: json['domain_hostname'] as String?,
     expiresAt: json['expires_at'] as int?,
     seoTitle: json['seo_title'] as String?,
@@ -76,6 +83,9 @@ class ShortLink {
 
   /// Unix seconds — last mutation.
   final int updatedAt;
+
+  /// Tags attached to the link. Empty on create; populated on get/list/update.
+  final List<Tag> tags;
 
   /// Verified custom domain hosting this link, when one is bound.
   final String? domainHostname;
@@ -110,6 +120,7 @@ class ShortLink {
           seoNoindex == other.seoNoindex &&
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt &&
+          _tagsEqual(tags, other.tags) &&
           domainHostname == other.domainHostname &&
           expiresAt == other.expiresAt &&
           seoTitle == other.seoTitle &&
@@ -128,6 +139,7 @@ class ShortLink {
     seoNoindex,
     createdAt,
     updatedAt,
+    Object.hashAll(tags),
     domainHostname,
     expiresAt,
     seoTitle,
@@ -139,4 +151,13 @@ class ShortLink {
 
   @override
   String toString() => 'ShortLink(code: $code, shortUrl: $shortUrl)';
+}
+
+bool _tagsEqual(List<Tag> a, List<Tag> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }

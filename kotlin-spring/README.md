@@ -19,7 +19,7 @@ Gradle (Kotlin DSL):
 
 ```kotlin
 dependencies {
-    implementation("co.rerout:rerout-spring-boot-starter:0.1.0")
+    implementation("co.rerout:rerout-spring-boot-starter:0.2.0")
 }
 ```
 
@@ -29,7 +29,7 @@ Maven:
 <dependency>
   <groupId>co.rerout</groupId>
   <artifactId>rerout-spring-boot-starter</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 

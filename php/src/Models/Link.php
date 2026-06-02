@@ -30,6 +30,8 @@ final readonly class Link
      * @param int|null    $seoUpdatedAt    Unix seconds — last SEO field change.
      * @param int         $createdAt       Unix seconds — link creation time.
      * @param int         $updatedAt       Unix seconds — last mutation.
+     * @param list<Tag>   $tags            Tags attached to the link. Read-only;
+     *                                     empty when none are bound.
      */
     public function __construct(
         public string $code,
@@ -47,6 +49,7 @@ final readonly class Link
         public ?int $seoUpdatedAt,
         public int $createdAt,
         public int $updatedAt,
+        public array $tags = [],
     ) {
     }
 
@@ -73,7 +76,27 @@ final readonly class Link
             seoUpdatedAt: self::nullableInt($data, 'seo_updated_at'),
             createdAt: self::requireInt($data, 'created_at'),
             updatedAt: self::requireInt($data, 'updated_at'),
+            tags: self::mapTags($data['tags'] ?? []),
         );
+    }
+
+    /**
+     * @return list<Tag>
+     */
+    private static function mapTags(mixed $raw): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $row) {
+            if (is_array($row)) {
+                /** @var array<string, mixed> $row */
+                $out[] = Tag::fromArray($row);
+            }
+        }
+
+        return $out;
     }
 
     /**

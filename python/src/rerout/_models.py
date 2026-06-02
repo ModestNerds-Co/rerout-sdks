@@ -53,6 +53,28 @@ EccLevel = Literal["L", "M", "Q", "H"]
 
 
 @dataclass(frozen=True, slots=True)
+class Tag:
+    """A tag attached to a link, as returned by the Rerout API.
+
+    Tags are read-only for API-key clients: they appear on link responses but
+    cannot be written through ``CreateLinkInput`` / ``UpdateLinkInput``.
+    """
+
+    id: str
+    name: str
+    color: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Tag:
+        """Build a ``Tag`` from the raw JSON dict the API returns."""
+        return cls(
+            id=str(data["id"]),
+            name=str(data["name"]),
+            color=str(data["color"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Link:
     """A short link as returned by the Rerout API."""
 
@@ -71,6 +93,7 @@ class Link:
     seo_image_url: str | None = None
     seo_canonical_url: str | None = None
     seo_updated_at: int | None = None
+    tags: tuple[Tag, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Link:
@@ -91,6 +114,7 @@ class Link:
             seo_image_url=_opt_str(data.get("seo_image_url")),
             seo_canonical_url=_opt_str(data.get("seo_canonical_url")),
             seo_updated_at=_opt_int(data.get("seo_updated_at")),
+            tags=tuple(Tag.from_dict(t) for t in data.get("tags", []) or []),
         )
 
 

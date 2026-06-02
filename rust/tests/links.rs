@@ -5,7 +5,15 @@ use rerout::{CreateLinkInput, ListLinksParams, Rerout, ReroutError, UpdateLinkIn
 use wiremock::matchers::{body_json_string, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
+/// A link envelope with an empty `tags` array — matches the `POST /v1/links`
+/// shape, where tags are not yet populated.
 fn link_json(code: &str) -> serde_json::Value {
+    link_json_with_tags(code, serde_json::json!([]))
+}
+
+/// A link envelope with a caller-supplied `tags` array. `GET`, `list`, and
+/// `PATCH` responses populate tags.
+fn link_json_with_tags(code: &str, tags: serde_json::Value) -> serde_json::Value {
     serde_json::json!({
         "code": code,
         "short_url": format!("https://rerout.co/{code}"),
@@ -22,6 +30,7 @@ fn link_json(code: &str) -> serde_json::Value {
         "seo_updated_at": null,
         "created_at": 1_700_000_000,
         "updated_at": 1_700_000_100,
+        "tags": tags,
     })
 }
 
@@ -53,6 +62,7 @@ async fn create_returns_the_new_link() {
     assert_eq!(link.code, "q4");
     assert_eq!(link.short_url, "https://rerout.co/q4");
     assert!(link.is_active);
+    assert!(link.tags.is_empty(), "create returns an empty tags array");
 }
 
 #[tokio::test]
@@ -188,17 +198,27 @@ async fn list_surfaces_unauthorized_errors() {
 // ─── links.get ──────────────────────────────────────────────────────────────
 
 #[tokio::test]
-async fn get_returns_a_single_link() {
+async fn get_returns_a_single_link_with_tags() {
     let server = MockServer::start().await;
+    let body = link_json_with_tags(
+        "abc",
+        serde_json::json!([
+            { "id": "tag_1", "name": "campaign", "color": "#3b82f6" },
+        ]),
+    );
     Mock::given(method("GET"))
         .and(path("/v1/links/abc"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(link_json("abc")))
+        .respond_with(ResponseTemplate::new(200).set_body_json(body))
         .mount(&server)
         .await;
 
     let client = client_for(&server).await;
     let link = client.links().get("abc").await.expect("get succeeds");
     assert_eq!(link.code, "abc");
+    assert_eq!(link.tags.len(), 1);
+    assert_eq!(link.tags[0].id, "tag_1");
+    assert_eq!(link.tags[0].name, "campaign");
+    assert_eq!(link.tags[0].color, "#3b82f6");
 }
 
 #[tokio::test]

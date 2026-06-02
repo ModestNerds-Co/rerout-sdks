@@ -41,7 +41,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'railties', '>= 7.0', '< 9.0'
-  spec.add_dependency 'rerout', '~> 0.1'
+  spec.add_dependency 'rerout', '~> 0.2'
 
   spec.add_development_dependency 'actionpack', '>= 7.0', '< 9.0'
   spec.add_development_dependency 'rack-test', '~> 2.1'

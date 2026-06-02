@@ -27,6 +27,30 @@ internal const val SAMPLE_LINK_JSON: String = """
   "seo_noindex": false,
   "seo_updated_at": null,
   "created_at": 1716000000,
+  "updated_at": 1716000000,
+  "tags": [
+    { "id": "tag_1", "name": "Marketing", "color": "#3b82f6" }
+  ]
+}
+"""
+
+/** A sample link JSON body with no `tags` field, to exercise the lenient default. */
+internal const val SAMPLE_LINK_JSON_NO_TAGS: String = """
+{
+  "code": "q4",
+  "short_url": "https://go.brand.com/q4",
+  "domain_hostname": "go.brand.com",
+  "target_url": "https://example.com/q4-sale",
+  "project_id": "prj_123",
+  "expires_at": null,
+  "is_active": true,
+  "seo_title": "Q4 Sale",
+  "seo_description": null,
+  "seo_image_url": null,
+  "seo_canonical_url": null,
+  "seo_noindex": false,
+  "seo_updated_at": null,
+  "created_at": 1716000000,
   "updated_at": 1716000000
 }
 """

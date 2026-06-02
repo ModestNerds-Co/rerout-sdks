@@ -35,7 +35,7 @@ from .signals import (
 )
 from .views import WebhookView
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 default_app_config = "rerout_django.apps.ReroutDjangoConfig"
 

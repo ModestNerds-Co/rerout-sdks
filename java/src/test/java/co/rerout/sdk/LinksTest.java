@@ -21,6 +21,7 @@ import co.rerout.sdk.model.LinkStats;
 import co.rerout.sdk.model.ListLinksResult;
 import co.rerout.sdk.model.ProjectInfo;
 import co.rerout.sdk.model.ProjectStats;
+import co.rerout.sdk.model.Tag;
 import co.rerout.sdk.model.UpdateLinkInput;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +80,14 @@ class LinksTest {
     }
 
     @Test
+    void createReturnsAnEmptyTagsListForANewLink() {
+        api.enqueue(MockResponse.json(MockApi.SAMPLE_LINK_NO_TAGS_JSON));
+        Link link = api.client().links().create(
+                CreateLinkInput.builder("https://example.com").build());
+        assertTrue(link.getTags().isEmpty());
+    }
+
+    @Test
     void createAsyncCompletesWithTheParsedLink() throws Exception {
         api.enqueue(MockResponse.json(MockApi.SAMPLE_LINK_JSON));
         Link link = api.client().links()
@@ -125,6 +134,39 @@ class LinksTest {
         Link link = api.client().links().get("q4");
         assertEquals("q4", link.getCode());
         assertEquals("GET", api.takeRequest().method);
+    }
+
+    @Test
+    void getParsesTheTagsArray() {
+        api.enqueue(MockResponse.json(MockApi.SAMPLE_LINK_JSON));
+        Link link = api.client().links().get("q4");
+        assertEquals(1, link.getTags().size());
+        Tag tag = link.getTags().get(0);
+        assertEquals("tag_1", tag.getId());
+        assertEquals("sale", tag.getName());
+        assertEquals("#ff0000", tag.getColor());
+    }
+
+    @Test
+    void getTreatsAMissingTagsFieldAsAnEmptyList() {
+        api.enqueue(MockResponse.json(
+                "{\"code\":\"q4\",\"short_url\":\"https://go.brand.com/q4\","
+                + "\"target_url\":\"https://example.com\",\"project_id\":\"prj_123\","
+                + "\"is_active\":true,\"seo_noindex\":false,"
+                + "\"created_at\":1716000000,\"updated_at\":1716000000}"));
+        Link link = api.client().links().get("q4");
+        assertTrue(link.getTags().isEmpty());
+    }
+
+    @Test
+    void getTreatsANullTagsFieldAsAnEmptyList() {
+        api.enqueue(MockResponse.json(
+                "{\"code\":\"q4\",\"short_url\":\"https://go.brand.com/q4\","
+                + "\"target_url\":\"https://example.com\",\"project_id\":\"prj_123\","
+                + "\"is_active\":true,\"seo_noindex\":false,\"tags\":null,"
+                + "\"created_at\":1716000000,\"updated_at\":1716000000}"));
+        Link link = api.client().links().get("q4");
+        assertTrue(link.getTags().isEmpty());
     }
 
     @Test

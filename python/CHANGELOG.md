@@ -4,6 +4,22 @@ All notable changes to `rerout` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-02
+
+### Added
+
+- Read-only `tags` field on `Link` — a tuple of `Tag` objects, each with
+  `id`, `name`, and `color`. Populated on `get`, `list`, and `update`
+  responses; an empty tuple on `create`. Parsed leniently: a missing `tags`
+  key yields an empty tuple. Tags cannot be written through
+  `CreateLinkInput` / `UpdateLinkInput` (the API ignores tag writes for
+  API-key clients).
+- `Tag` dataclass, exported from the package root.
+
+### Changed
+
+- `project.stats()` now targets the live `/v1/projects/me/stats` endpoint.
+
 ## [0.1.0] - 2026-05-21
 
 ### Added
@@ -25,4 +41,5 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - PEP 561 marker (`py.typed`) — full type hints, mypy strict-clean.
 - Context-manager support on the client for deterministic teardown.
 
+[0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-v0.1.0

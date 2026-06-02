@@ -12,6 +12,14 @@ import (
 	"strconv"
 )
 
+// Tag is a label attached to a link. Tags are read-only via the API-key
+// client — they are returned in link responses but cannot be written.
+type Tag struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
 // Link is the canonical short-link representation returned by the API.
 type Link struct {
 	Code            string  `json:"code"`
@@ -27,6 +35,7 @@ type Link struct {
 	SEOCanonicalURL *string `json:"seo_canonical_url,omitempty"`
 	SEONoindex      bool    `json:"seo_noindex"`
 	SEOUpdatedAt    *int64  `json:"seo_updated_at,omitempty"`
+	Tags            []Tag   `json:"tags"`
 	CreatedAt       int64   `json:"created_at"`
 	UpdatedAt       int64   `json:"updated_at"`
 }

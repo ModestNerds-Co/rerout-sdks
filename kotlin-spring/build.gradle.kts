@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "co.rerout"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ val springBootVersion = "3.3.5"
 dependencies {
     // The base Rerout SDK. Resolved from the sibling composite build during
     // development; from Maven Central on release.
-    api("co.rerout:rerout-kotlin:0.1.0")
+    api("co.rerout:rerout-kotlin:0.2.0")
 
     api("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
     implementation("org.springframework.boot:spring-boot:$springBootVersion")
@@ -68,7 +68,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("co.rerout", "rerout-spring-boot-starter", "0.1.0")
+    coordinates("co.rerout", "rerout-spring-boot-starter", "0.2.0")
 
     pom {
         name.set("Rerout Spring Boot Starter")

@@ -203,7 +203,7 @@ func TestLink_DecodesNullableFields(t *testing.T) {
 	  "target_url":"https://example.com","project_id":"p","expires_at":null,
 	  "is_active":true,"seo_title":null,"seo_description":null,
 	  "seo_image_url":null,"seo_canonical_url":null,"seo_noindex":false,
-	  "seo_updated_at":null,"created_at":1,"updated_at":2
+	  "seo_updated_at":null,"tags":[],"created_at":1,"updated_at":2
 	}`
 	var link rerout.Link
 	if err := json.Unmarshal([]byte(body), &link); err != nil {
@@ -220,6 +220,9 @@ func TestLink_DecodesNullableFields(t *testing.T) {
 	}
 	if link.Code != "q4" || link.CreatedAt != 1 || link.UpdatedAt != 2 {
 		t.Errorf("scalar fields wrong: %+v", link)
+	}
+	if len(link.Tags) != 0 {
+		t.Errorf("Tags = %+v, want empty", link.Tags)
 	}
 }
 

@@ -5,6 +5,20 @@
 
 use serde::{Deserialize, Serialize};
 
+// ─── Tag ────────────────────────────────────────────────────────────────────
+
+/// A label attached to a [`Link`]. Read-only — tag writes are ignored for
+/// API-key clients.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Tag {
+    /// Tag ID.
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// Hex color (e.g. `#3b82f6`).
+    pub color: String,
+}
+
 // ─── Link ───────────────────────────────────────────────────────────────────
 
 /// A single short link as returned by the Rerout API.
@@ -41,6 +55,10 @@ pub struct Link {
     pub created_at: i64,
     /// Unix seconds — last mutation.
     pub updated_at: i64,
+    /// Read-only tags attached to the link. Empty on create; populated on
+    /// get, list, and update. A missing field deserializes to an empty `Vec`.
+    #[serde(default)]
+    pub tags: Vec<Tag>,
 }
 
 // ─── Inputs ─────────────────────────────────────────────────────────────────

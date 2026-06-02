@@ -76,6 +76,17 @@ rerout.links.delete(code)
 rerout.links.stats(code, days=30)
 ```
 
+Every `Link` carries a read-only `tags` tuple — each `Tag` has an `id`,
+`name`, and `color`. Tags are populated on `get`, `list`, and `update`
+responses (empty on `create`), and cannot be written through the SDK; the
+API ignores tag writes for API-key clients.
+
+```python
+link = rerout.links.get("q4")
+for tag in link.tags:
+    print(tag.name, tag.color)
+```
+
 `UpdateLinkInput` uses an `UNSET` sentinel to distinguish "leave this field
 alone" from "clear this field on the server" — pass `None` to clear, or
 just don't pass the field at all:
