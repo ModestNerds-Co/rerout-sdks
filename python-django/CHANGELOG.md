@@ -44,6 +44,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for type-specific subscription.
 - PEP 561 marker (`py.typed`) — full type hints.
 
-[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.3.0
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.1.0

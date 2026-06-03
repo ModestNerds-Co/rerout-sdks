@@ -51,6 +51,6 @@ and this project adheres to
 - Pointer helpers `String`, `Int`, `Int64`, `Bool` for optional struct fields.
 - Standard-library only — no third-party dependencies.
 
-[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.3.0
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.1.0

@@ -48,6 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Rerout::Error` with stable `code`, `status`, `path`, `timestamp`, `details`
   plus `rate_limited?` and `server_error?` convenience flags.
 
-[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-v0.3.0
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-v0.1.0

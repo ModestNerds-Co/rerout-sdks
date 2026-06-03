@@ -38,6 +38,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Strongly-typed event records: `LinkClicked`, `QrScanned`, `DomainFailed`.
 - Targets `net8.0`; depends on the base `Rerout` SDK.
 
-[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-aspnet-v0.3.0
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-aspnet/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-aspnet-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-aspnet-v0.1.0

@@ -43,6 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Rerout::Rails::ConfigurationError` raised on missing `api_key` or
   `webhook_secret`.
 
-[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-rails-v0.3.0
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-rails/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-rails-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/ruby-rails-v0.1.0
