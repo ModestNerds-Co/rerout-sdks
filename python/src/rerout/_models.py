@@ -244,6 +244,119 @@ class ProjectInfo:
         )
 
 
+WebhookPayloadFormat = Literal["json", "slack"]
+"""Delivery payload encoding for a webhook endpoint."""
+
+
+@dataclass(frozen=True, slots=True)
+class Webhook:
+    """A webhook endpoint registered to the project.
+
+    Mirrors the server-side ``WebhookEndpointResponse`` shape verbatim.
+    """
+
+    id: str
+    project_id: str
+    name: str
+    url: str
+    events: tuple[str, ...]
+    is_active: bool
+    payload_format: str
+    created_at: int
+    updated_at: int
+    last_delivery_at: int | None = None
+    last_success_at: int | None = None
+    last_failure_at: int | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Webhook:
+        """Build a ``Webhook`` from the raw JSON dict the API returns."""
+        return cls(
+            id=str(data["id"]),
+            project_id=str(data["project_id"]),
+            name=str(data["name"]),
+            url=str(data["url"]),
+            events=tuple(str(e) for e in data.get("events", []) or []),
+            is_active=bool(data["is_active"]),
+            payload_format=str(data["payload_format"]),
+            created_at=int(data["created_at"]),
+            updated_at=int(data["updated_at"]),
+            last_delivery_at=_opt_int(data.get("last_delivery_at")),
+            last_success_at=_opt_int(data.get("last_success_at")),
+            last_failure_at=_opt_int(data.get("last_failure_at")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CreatedWebhook:
+    """Result of creating a webhook endpoint.
+
+    The ``signing_secret`` (``whsec_…``) is returned **once** — store it now;
+    it is never shown again.
+    """
+
+    endpoint: Webhook
+    signing_secret: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CreatedWebhook:
+        return cls(
+            endpoint=Webhook.from_dict(data["endpoint"]),
+            signing_secret=str(data["signing_secret"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ListWebhooksResult:
+    """Webhook endpoints + supported event types from ``GET /v1/projects/me/webhooks``."""
+
+    endpoints: tuple[Webhook, ...]
+    event_types: tuple[str, ...]
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ListWebhooksResult:
+        return cls(
+            endpoints=tuple(
+                Webhook.from_dict(item) for item in data.get("endpoints", []) or []
+            ),
+            event_types=tuple(str(e) for e in data.get("event_types", []) or []),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CreateWebhookInput:
+    """Request body for ``POST /v1/projects/me/webhooks``.
+
+    ``name``, ``url``, and ``events`` are required. ``is_active`` defaults to
+    ``True`` server-side; ``payload_format`` defaults to ``json`` (or ``slack``
+    for Slack URLs). Both optional fields are omitted from the payload unless
+    explicitly set.
+    """
+
+    name: str
+    url: str
+    events: tuple[str, ...] | list[str]
+    is_active: bool | None = None
+    payload_format: WebhookPayloadFormat | None = None
+
+    def to_payload(self) -> dict[str, Any]:
+        """Render as the JSON dict the API expects.
+
+        Unset optional fields (``is_active``, ``payload_format`` kept at their
+        ``None`` default) are omitted so the server applies its defaults.
+        """
+        payload: dict[str, Any] = {
+            "name": self.name,
+            "url": self.url,
+            "events": list(self.events),
+        }
+        if self.is_active is not None:
+            payload["is_active"] = self.is_active
+        if self.payload_format is not None:
+            payload["payload_format"] = self.payload_format
+        return payload
+
+
 @dataclass(frozen=True, slots=True)
 class QrOptions:
     """Optional knobs accepted by every QR endpoint.

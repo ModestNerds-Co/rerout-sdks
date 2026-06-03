@@ -74,6 +74,7 @@ public sealed class ReroutClient : IDisposable
         Links = new Links(_http);
         Project = new Project(_http);
         Qr = new Qr(_http);
+        Webhooks = new Resources.Webhooks(_http);
     }
 
     /// <summary>Link operations: create, list, get, update, delete, stats.</summary>
@@ -84,6 +85,9 @@ public sealed class ReroutClient : IDisposable
 
     /// <summary>QR helpers — pure URL builder and authenticated SVG fetch.</summary>
     public Qr Qr { get; }
+
+    /// <summary>Webhook endpoint management: create, list, delete.</summary>
+    public Resources.Webhooks Webhooks { get; }
 
     /// <summary>The resolved API base URL, with trailing slashes trimmed.</summary>
     public string BaseUrl => _http.BaseUrl;

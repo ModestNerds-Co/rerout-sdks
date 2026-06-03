@@ -64,7 +64,7 @@ rerout = Rerout::Client.new(
 A blank or missing `api_key` raises `Rerout::Error` with code `missing_api_key`
 before any network call.
 
-The client exposes three namespaces: `links`, `project`, and `qr`.
+The client exposes four namespaces: `links`, `project`, `qr`, and `webhooks`.
 
 ## Links
 
@@ -146,6 +146,38 @@ File.write('q4.svg', svg)
 
 QR options: `size` (1–32), `margin` (0–16), `ecc` (`L`/`M`/`Q`/`H`), `domain`,
 and `refresh` (`true` is serialized as `1`; a string is sent verbatim).
+
+## Webhook management
+
+Manage the webhook endpoints that receive event deliveries for the project that
+owns the API key. (This is the `webhooks` namespace — distinct from
+`Rerout::Webhooks`, which verifies inbound signatures below.)
+
+```ruby
+# Create — name, url, and events are required.
+created = rerout.webhooks.create(
+  Rerout::CreateWebhookInput.new(
+    name: 'prod listener',
+    url: 'https://hooks.brand.com/rerout',
+    events: ['link.created'],
+    payload_format: 'json' # optional: "json" (default) or "slack"
+  )
+)
+
+created.endpoint.id      # => "wh_..."
+created.signing_secret   # => "whsec_..." — shown ONCE; persist it now.
+
+# List endpoints plus the event types the server can deliver.
+result = rerout.webhooks.list
+result.endpoints   # => [Rerout::Models::Webhook, ...]
+result.event_types # => ["link.created", ...]
+
+# Delete (soft delete) — idempotent.
+rerout.webhooks.delete('wh_...') # => { "deleted" => true }
+```
+
+The `signing_secret` returned by `create` is the value you pass as `secret:` to
+`verify_signature` below — store it securely, as it cannot be retrieved again.
 
 ## Webhook signature verification
 

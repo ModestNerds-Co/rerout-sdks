@@ -22,8 +22,9 @@ import java.time.Duration;
 /**
  * Official client for the Rerout API.
  *
- * <p>The client exposes three namespaces — {@link #links()}, {@link #project()},
- * and {@link #qr()}. Every network operation ships in two forms:
+ * <p>The client exposes four namespaces — {@link #links()}, {@link #project()},
+ * {@link #qr()}, and {@link #webhooks()}. Every network operation ships in two
+ * forms:
  *
  * <ul>
  *   <li>a <strong>blocking</strong> method (for example {@code links().create(…)})
@@ -75,6 +76,7 @@ public final class Rerout {
     private final Links links;
     private final Project project;
     private final Qr qr;
+    private final WebhookEndpoints webhooks;
 
     private Rerout(Builder b) {
         if (b.apiKey == null || b.apiKey.trim().isEmpty()) {
@@ -110,6 +112,7 @@ public final class Rerout {
         this.links = new Links(transport);
         this.project = new Project(transport);
         this.qr = new Qr(transport, resolved);
+        this.webhooks = new WebhookEndpoints(transport);
     }
 
     /**
@@ -153,6 +156,17 @@ public final class Rerout {
     /** {@return the QR helpers namespace} */
     public Qr qr() {
         return qr;
+    }
+
+    /**
+     * {@return the webhook endpoint management namespace — create, list, delete}
+     *
+     * <p>This manages the endpoints the project delivers events to. To
+     * <em>verify</em> inbound deliveries, use the static
+     * {@link Webhooks#verifyReroutSignature} helper instead.
+     */
+    public WebhookEndpoints webhooks() {
+        return webhooks;
     }
 
     /**

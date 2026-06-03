@@ -11,9 +11,12 @@
 //
 
 export 'create_link_request.dart';
+export 'create_webhook_request.dart';
+export 'created_webhook.dart';
 export 'daily_clicks_point.dart';
 export 'link_stats.dart';
 export 'list_links_result.dart';
+export 'list_webhooks_result.dart';
 export 'project_stats.dart';
 export 'qr_options.dart';
 export 'rerout_exception.dart';
@@ -22,3 +25,4 @@ export 'short_link.dart';
 export 'stats_breakdown.dart';
 export 'tag.dart';
 export 'update_link_request.dart';
+export 'webhook.dart';

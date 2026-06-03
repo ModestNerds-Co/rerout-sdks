@@ -7,12 +7,14 @@ require_relative 'version'
 require_relative 'error'
 require_relative 'create_link_input'
 require_relative 'update_link_input'
+require_relative 'create_webhook_input'
 require_relative 'qr_options'
 require_relative 'webhooks'
 require_relative 'models'
 require_relative 'links'
 require_relative 'project'
 require_relative 'qr'
+require_relative 'webhooks_resource'
 
 module Rerout
   # Default production API base URL.
@@ -36,6 +38,8 @@ module Rerout
     attr_reader :project
     # @return [Resources::Qr] QR namespace.
     attr_reader :qr
+    # @return [Resources::Webhooks] webhook endpoint management namespace.
+    attr_reader :webhooks
 
     # @param api_key [String] project API key (`rrk_…`). Required.
     # @param base_url [String, nil] override base URL. Defaults to `https://api.rerout.co`.
@@ -61,6 +65,7 @@ module Rerout
       @links = Resources::Links.new(self)
       @project = Resources::Project.new(self)
       @qr = Resources::Qr.new(self)
+      @webhooks = Resources::Webhooks.new(self)
     end
 
     # Perform a JSON request against the Rerout API.

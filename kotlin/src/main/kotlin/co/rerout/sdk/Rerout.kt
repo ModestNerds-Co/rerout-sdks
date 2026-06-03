@@ -31,9 +31,9 @@ internal const val SDK_VERSION: String = "0.1.0"
 /**
  * Official client for the Rerout API.
  *
- * The client exposes three namespaces: [links], [project], and [qr]. All
- * network calls are `suspend` functions and throw [ReroutException] on any
- * failure.
+ * The client exposes four namespaces: [links], [project], [qr], and
+ * [webhooks]. All network calls are `suspend` functions and throw
+ * [ReroutException] on any failure.
  *
  * ## Usage
  *
@@ -62,6 +62,9 @@ public class Rerout private constructor(
 
     /** QR helpers — URL builders and authenticated SVG fetch. */
     public val qr: Qr = Qr(transport, baseUrl)
+
+    /** Webhook endpoint management: create, list, delete. */
+    public val webhooks: Webhooks = Webhooks(transport)
 
     public companion object {
         /**

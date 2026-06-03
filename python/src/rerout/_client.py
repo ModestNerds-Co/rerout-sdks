@@ -15,10 +15,13 @@ import httpx
 
 from ._errors import ReroutError
 from ._models import (
+    CreatedWebhook,
     CreateLinkInput,
+    CreateWebhookInput,
     Link,
     LinkStats,
     ListLinksResult,
+    ListWebhooksResult,
     ProjectInfo,
     ProjectStats,
     QrOptions,
@@ -45,6 +48,7 @@ class Rerout:
     links: Links
     project: Project
     qr: Qr
+    webhooks: Webhooks
 
     def __init__(
         self,
@@ -86,6 +90,7 @@ class Rerout:
         self.links = Links(self)
         self.project = Project(self)
         self.qr = Qr(self)
+        self.webhooks = Webhooks(self)
 
     @property
     def base_url(self) -> str:
@@ -363,6 +368,51 @@ class Project:
         """Info about the project that owns the current API key."""
         data = self._client._request("GET", "/v1/projects/me")
         return ProjectInfo.from_dict(_expect_dict(data))
+
+
+class Webhooks:
+    """Webhook endpoint management: create, list, delete.
+
+    Operates on the project that owns the API key — the project is resolved
+    from the key, so no project id appears in the path.
+    """
+
+    def __init__(self, client: Rerout) -> None:
+        self._client = client
+
+    def create(self, input: CreateWebhookInput) -> CreatedWebhook:
+        """Create a webhook endpoint for the project that owns the API key.
+
+        The returned ``signing_secret`` is shown once — persist it to verify
+        deliveries with :func:`verify_rerout_signature`.
+        """
+        data = self._client._request(
+            "POST",
+            "/v1/projects/me/webhooks",
+            body=input.to_payload(),
+        )
+        return CreatedWebhook.from_dict(_expect_dict(data))
+
+    def list(self) -> ListWebhooksResult:
+        """List webhook endpoints and the event types the server can deliver."""
+        data = self._client._request(
+            "GET",
+            "/v1/projects/me/webhooks",
+        )
+        return ListWebhooksResult.from_dict(_expect_dict(data))
+
+    def delete(self, endpoint_id: str) -> bool:
+        """Soft-delete an endpoint. Returns ``True`` on success.
+
+        Idempotent — deleting an already-gone endpoint still succeeds.
+        """
+        data = self._client._request(
+            "DELETE",
+            f"/v1/projects/me/webhooks/{_encode_code(endpoint_id)}",
+        )
+        if isinstance(data, dict):
+            return bool(data.get("deleted", True))
+        return True
 
 
 class Qr:

@@ -216,9 +216,64 @@ type Project struct {
 	Slug string `json:"slug"`
 }
 
-// DeleteResult is the response body from DELETE /v1/links/:code.
+// DeleteResult is the response body from DELETE /v1/links/:code and
+// DELETE /v1/projects/me/webhooks/:id.
 type DeleteResult struct {
 	Deleted bool `json:"deleted"`
+}
+
+// Webhook is a webhook endpoint registered to the project. Mirrors the
+// server-side WebhookEndpointResponse shape.
+type Webhook struct {
+	ID             string   `json:"id"`
+	ProjectID      string   `json:"project_id"`
+	Name           string   `json:"name"`
+	URL            string   `json:"url"`
+	Events         []string `json:"events"`
+	IsActive       bool     `json:"is_active"`
+	PayloadFormat  string   `json:"payload_format"`
+	CreatedAt      int64    `json:"created_at"`
+	UpdatedAt      int64    `json:"updated_at"`
+	LastDeliveryAt *int64   `json:"last_delivery_at,omitempty"`
+	LastSuccessAt  *int64   `json:"last_success_at,omitempty"`
+	LastFailureAt  *int64   `json:"last_failure_at,omitempty"`
+}
+
+// CreateWebhookInput is the body for POST /v1/projects/me/webhooks.
+//
+// Name, URL, and Events are required. Optional fields are pointers so the
+// JSON encoder omits unset ones — letting the server apply its defaults
+// (IsActive defaults to true; PayloadFormat defaults to "json").
+//
+//	in := rerout.CreateWebhookInput{
+//	    Name:          "Order events",
+//	    URL:           "https://example.com/hooks/rerout",
+//	    Events:        []string{"link.created", "link.clicked"},
+//	    IsActive:      rerout.Bool(true),
+//	    PayloadFormat: rerout.String("json"),
+//	}
+type CreateWebhookInput struct {
+	Name          string   `json:"name"`
+	URL           string   `json:"url"`
+	Events        []string `json:"events"`
+	IsActive      *bool    `json:"is_active,omitempty"`
+	PayloadFormat *string  `json:"payload_format,omitempty"`
+}
+
+// CreatedWebhook is the response from POST /v1/projects/me/webhooks.
+//
+// SigningSecret (a "whsec_…" value) is returned ONCE — persist it now so you
+// can verify deliveries with VerifySignature; it is never shown again.
+type CreatedWebhook struct {
+	Endpoint      Webhook `json:"endpoint"`
+	SigningSecret string  `json:"signing_secret"`
+}
+
+// ListWebhooksResult is the response from GET /v1/projects/me/webhooks.
+type ListWebhooksResult struct {
+	Endpoints []Webhook `json:"endpoints"`
+	// EventTypes lists every event type the server can deliver.
+	EventTypes []string `json:"event_types"`
 }
 
 // ListLinksParams are the optional cursor / limit query parameters for

@@ -12,8 +12,11 @@
 
 import 'package:dio/dio.dart';
 import 'package:rerout/src/models/create_link_request.dart';
+import 'package:rerout/src/models/create_webhook_request.dart';
+import 'package:rerout/src/models/created_webhook.dart';
 import 'package:rerout/src/models/link_stats.dart';
 import 'package:rerout/src/models/list_links_result.dart';
+import 'package:rerout/src/models/list_webhooks_result.dart';
 import 'package:rerout/src/models/project_stats.dart';
 import 'package:rerout/src/models/qr_options.dart';
 import 'package:rerout/src/models/rerout_exception.dart';
@@ -59,6 +62,7 @@ class Rerout {
     links = Links._(this);
     project = Project._(this);
     qr = Qr._(this);
+    webhooks = Webhooks._(this);
   }
 
   /// Creates a new instance of the Rerout SDK.
@@ -107,6 +111,9 @@ class Rerout {
 
   /// QR helpers — URL builders and signed-fetch.
   late final Qr qr;
+
+  /// Webhook endpoint management: create, list, delete.
+  late final Webhooks webhooks;
 
   /// The resolved API base URL. Exposed for diagnostics and the QR helper.
   String get baseUrl => _baseUrl;
@@ -316,6 +323,55 @@ class Project {
       path: '/v1/projects/me',
       parse: (data) =>
           (data as Map<String, dynamic>?) ?? const <String, dynamic>{},
+    );
+  }
+}
+
+/// Webhook endpoint management namespace. Reached via [Rerout.webhooks].
+///
+/// Manages the project's *outbound* webhook endpoints. To verify *inbound*
+/// deliveries, use `ReroutWebhookSignature` instead.
+class Webhooks {
+  Webhooks._(this._client);
+
+  final Rerout _client;
+
+  /// Creates a webhook endpoint for the project that owns the API key.
+  ///
+  /// The returned [CreatedWebhook.signingSecret] is shown once — persist it to
+  /// verify inbound deliveries.
+  Future<Result<CreatedWebhook>> create(CreateWebhookRequest request) {
+    return _client.request<CreatedWebhook>(
+      method: 'POST',
+      path: '/v1/projects/me/webhooks',
+      body: request.toJson(),
+      parse: (data) =>
+          CreatedWebhook.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Lists webhook endpoints and the event types the server can deliver.
+  Future<Result<ListWebhooksResult>> list() {
+    return _client.request<ListWebhooksResult>(
+      method: 'GET',
+      path: '/v1/projects/me/webhooks',
+      parse: (data) =>
+          ListWebhooksResult.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Soft-deletes an endpoint and abandons its pending deliveries.
+  /// Idempotent.
+  Future<Result<bool>> delete(String endpointId) {
+    return _client.request<bool>(
+      method: 'DELETE',
+      path: '/v1/projects/me/webhooks/${Uri.encodeComponent(endpointId)}',
+      parse: (data) {
+        if (data is Map<String, dynamic>) {
+          return data['deleted'] as bool? ?? true;
+        }
+        return true;
+      },
     );
   }
 }

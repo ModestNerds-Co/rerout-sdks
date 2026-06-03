@@ -7,8 +7,52 @@
 
 package co.rerout.sdk
 
+import co.rerout.sdk.internal.HttpMethod
+import co.rerout.sdk.internal.HttpRequest
+import co.rerout.sdk.internal.HttpTransport
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+
+/**
+ * Webhook endpoint management namespace — create, list, delete. Reached via
+ * [Rerout.webhooks].
+ *
+ * This is the API-key-authenticated management surface for webhook endpoints.
+ * To *verify* inbound deliveries, use [ReroutWebhooks.verifySignature] instead.
+ */
+public class Webhooks internal constructor(
+    private val transport: HttpTransport,
+) {
+    /**
+     * Creates a webhook endpoint for the project that owns the API key.
+     *
+     * The returned [CreatedWebhook.signingSecret] is shown once — persist it to
+     * verify deliveries with [ReroutWebhooks.verifySignature].
+     */
+    public suspend fun create(input: CreateWebhookInput): CreatedWebhook {
+        val path = "/v1/projects/me/webhooks"
+        val body = transport.jsonFormat.encodeToString(CreateWebhookInput.serializer(), input)
+        val text = transport.execute(
+            HttpRequest(method = HttpMethod.POST, path = path, body = body),
+        )
+        return transport.decode<CreatedWebhook>(text, path)
+    }
+
+    /** Lists webhook endpoints and the event types the server can deliver. */
+    public suspend fun list(): ListWebhooksResult {
+        val path = "/v1/projects/me/webhooks"
+        val text = transport.execute(HttpRequest(method = HttpMethod.GET, path = path))
+        return transport.decode<ListWebhooksResult>(text, path)
+    }
+
+    /** Soft-deletes an endpoint and abandons its pending deliveries. Idempotent. */
+    public suspend fun delete(endpointId: String): DeleteResult {
+        val path = "/v1/projects/me/webhooks/${endpointId.encodePathSegment()}"
+        val text = transport.execute(HttpRequest(method = HttpMethod.DELETE, path = path))
+        if (text.isEmpty()) return DeleteResult(deleted = true)
+        return transport.decode<DeleteResult>(text, path)
+    }
+}
 
 /**
  * Helper for verifying inbound `X-Rerout-Signature` webhook headers.

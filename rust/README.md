@@ -149,6 +149,37 @@ let svg = rerout.qr().svg("q4", &QrOptions::new()).await?;
 # }
 ```
 
+### Webhook management
+
+Manage the endpoints that receive deliveries via `webhooks()`. This is the
+API-key-authenticated surface under `/v1/projects/me/webhooks` — distinct from
+the inbound signature verification below.
+
+```rust,no_run
+# use rerout::{CreateWebhookInput, Rerout};
+# async fn run(rerout: Rerout) -> Result<(), rerout::ReroutError> {
+let created = rerout
+    .webhooks()
+    .create(&CreateWebhookInput::new(
+        "Order events",
+        "https://hooks.brand.com/rerout",
+        ["link.created", "link.clicked"],
+    ))
+    .await?;
+
+// The signing secret is shown once — persist it now to verify deliveries.
+println!("secret: {}", created.signing_secret);
+let endpoint_id = created.endpoint.id;
+
+let list = rerout.webhooks().list().await?;
+println!("{} endpoint(s)", list.endpoints.len());
+
+let removed = rerout.webhooks().delete(&endpoint_id).await?;
+assert!(removed.deleted);
+# Ok(())
+# }
+```
+
 ### Webhook signature verification
 
 Verify incoming webhook deliveries with the standalone helper in

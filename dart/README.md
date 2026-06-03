@@ -75,6 +75,17 @@ final url = rerout.qr.url(
 final svgResult = await rerout.qr.svg('q4');
 ```
 
+### Webhook management
+
+```dart
+rerout.webhooks.create(CreateWebhookRequest(...));
+rerout.webhooks.list();
+rerout.webhooks.delete('whk_...');
+```
+
+Webhooks are managed against `/v1/projects/me/webhooks` using API-key auth. The
+signing secret returned by `create` is shown once — store it securely.
+
 ### Webhook signatures
 
 ```dart

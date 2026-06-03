@@ -433,6 +433,144 @@ pub struct DeleteLinkResult {
     pub deleted: bool,
 }
 
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+/// Delivery payload encoding for a webhook endpoint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum WebhookPayloadFormat {
+    /// Standard signed JSON delivery.
+    Json,
+    /// Slack-compatible incoming-webhook payload.
+    Slack,
+}
+
+impl WebhookPayloadFormat {
+    /// Wire representation (`"json"` or `"slack"`).
+    pub fn as_str(self) -> &'static str {
+        match self {
+            WebhookPayloadFormat::Json => "json",
+            WebhookPayloadFormat::Slack => "slack",
+        }
+    }
+}
+
+/// A webhook endpoint registered to the project. Mirrors the server-side
+/// `WebhookEndpointResponse` shape.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Webhook {
+    /// Endpoint ID (`wh_…`).
+    pub id: String,
+    /// Project that owns the endpoint.
+    pub project_id: String,
+    /// Human-readable label.
+    pub name: String,
+    /// Public `https://` URL that receives signed POST deliveries.
+    pub url: String,
+    /// Event types the endpoint is subscribed to.
+    #[serde(default)]
+    pub events: Vec<String>,
+    /// Whether the endpoint is currently active.
+    pub is_active: bool,
+    /// Delivery payload encoding (`json` or `slack`).
+    pub payload_format: String,
+    /// Unix seconds — endpoint creation time.
+    pub created_at: i64,
+    /// Unix seconds — last mutation.
+    pub updated_at: i64,
+    /// Unix seconds — last delivery attempt. `None` if never delivered.
+    pub last_delivery_at: Option<i64>,
+    /// Unix seconds — last successful delivery. `None` if none succeeded.
+    pub last_success_at: Option<i64>,
+    /// Unix seconds — last failed delivery. `None` if none failed.
+    pub last_failure_at: Option<i64>,
+}
+
+/// Body for `POST /v1/projects/me/webhooks`.
+///
+/// `name`, `url`, and `events` are required. `is_active` and `payload_format`
+/// are optional and only sent when `Some`. Use [`CreateWebhookInput::new`] for
+/// the minimal happy path.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct CreateWebhookInput {
+    /// Human-readable label for the endpoint.
+    pub name: String,
+    /// Public `https://` URL that receives signed POST deliveries.
+    pub url: String,
+    /// Event types to subscribe to (e.g. `link.created`). At least one.
+    pub events: Vec<String>,
+    /// Whether the endpoint starts active. Defaults to `true` server-side.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_active: Option<bool>,
+    /// Payload encoding. Defaults to `json` server-side.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payload_format: Option<WebhookPayloadFormat>,
+}
+
+impl CreateWebhookInput {
+    /// Build the minimal input: a name, a destination URL, and the events to
+    /// subscribe to.
+    pub fn new(
+        name: impl Into<String>,
+        url: impl Into<String>,
+        events: impl IntoIterator<Item = impl Into<String>>,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            url: url.into(),
+            events: events.into_iter().map(Into::into).collect(),
+            is_active: None,
+            payload_format: None,
+        }
+    }
+
+    /// Builder — set whether the endpoint starts active.
+    #[must_use]
+    pub fn with_is_active(mut self, is_active: bool) -> Self {
+        self.is_active = Some(is_active);
+        self
+    }
+
+    /// Builder — set the payload encoding.
+    #[must_use]
+    pub fn with_payload_format(mut self, payload_format: WebhookPayloadFormat) -> Self {
+        self.payload_format = Some(payload_format);
+        self
+    }
+}
+
+/// Result of creating a webhook endpoint.
+///
+/// The `signing_secret` (`whsec_…`) is returned **once** — store it now to
+/// verify future deliveries with [`crate::verify_rerout_signature`]; it is
+/// never shown again.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CreatedWebhook {
+    /// The newly-created endpoint.
+    pub endpoint: Webhook,
+    /// One-time signing secret (`whsec_…`).
+    pub signing_secret: String,
+}
+
+/// Response body for `GET /v1/projects/me/webhooks`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ListWebhooksResult {
+    /// Registered endpoints.
+    #[serde(default)]
+    pub endpoints: Vec<Webhook>,
+    /// Every event type the server can deliver.
+    #[serde(default)]
+    pub event_types: Vec<String>,
+}
+
+/// Response body for `DELETE /v1/projects/me/webhooks/:id`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DeleteWebhookResult {
+    /// Whether the delete succeeded.
+    #[serde(default)]
+    pub deleted: bool,
+}
+
 // ─── QR ─────────────────────────────────────────────────────────────────────
 
 /// Error-correction levels for the QR endpoint.

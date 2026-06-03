@@ -117,3 +117,50 @@ export interface QrUrlOptions {
   /** Cache-bust on regenerate. */
   refresh?: string | true
 }
+
+/** Delivery payload encoding for a webhook endpoint. */
+export type WebhookPayloadFormat = 'json' | 'slack'
+
+/** A webhook endpoint registered to the project. Mirrors `WebhookEndpointResponse`. */
+export interface Webhook {
+  id: string
+  project_id: string
+  name: string
+  url: string
+  events: string[]
+  is_active: boolean
+  payload_format: string
+  created_at: number
+  updated_at: number
+  last_delivery_at: number | null
+  last_success_at: number | null
+  last_failure_at: number | null
+}
+
+export interface CreateWebhookInput {
+  /** Human-readable label for the endpoint. */
+  name: string
+  /** Public https:// URL that receives signed POST deliveries. */
+  url: string
+  /** Event types to subscribe to (e.g. `link.created`). At least one. */
+  events: string[]
+  /** Whether the endpoint starts active. Default: true. */
+  is_active?: boolean
+  /** Payload encoding. Defaults to `json` (or `slack` for Slack URLs). */
+  payload_format?: WebhookPayloadFormat
+}
+
+/**
+ * Result of creating a webhook. The `signing_secret` (`whsec_…`) is returned
+ * **once** — store it now; it is never shown again.
+ */
+export interface CreatedWebhook {
+  endpoint: Webhook
+  signing_secret: string
+}
+
+export interface ListWebhooksResult {
+  endpoints: Webhook[]
+  /** Every event type the server can deliver. */
+  event_types: string[]
+}

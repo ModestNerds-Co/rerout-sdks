@@ -143,6 +143,41 @@ svg, err := client.QR().SVG(ctx, "q4", &rerout.QROptions{Size: rerout.Int(10)})
 `rerout.BuildQRURL(baseURL, code, options)` is a standalone version of
 `QR().URL` for when you have a base URL but not a full client.
 
+### Webhook management
+
+`client.Webhooks()` manages the project's webhook endpoints over the
+`/v1/projects/me/webhooks` surface. The project is resolved from the API key,
+so there is no project id in the path.
+
+```go
+ctx := context.Background()
+
+created, err := client.Webhooks().Create(ctx, rerout.CreateWebhookInput{
+	Name:          "Order events",
+	URL:           "https://example.com/hooks/rerout",
+	Events:        []string{"link.created", "link.clicked"},
+	IsActive:      rerout.Bool(true),         // optional; server default is true
+	PayloadFormat: rerout.String("json"),     // optional; server default is "json"
+})
+// created.Endpoint.ID is the "wh_…" endpoint id.
+// created.SigningSecret ("whsec_…") is shown ONCE — persist it now to verify
+// deliveries with VerifySignature; it is never returned again.
+
+list, err := client.Webhooks().List(ctx)
+// list.Endpoints is the registered endpoints; list.EventTypes lists every
+// event type the server can deliver.
+
+result, err := client.Webhooks().Delete(ctx, created.Endpoint.ID) // result.Deleted
+```
+
+`Name`, `URL`, and `Events` are required on `CreateWebhookInput`; the optional
+pointer fields are omitted from the request when unset so the server applies
+its defaults. `Delete` soft-deletes the endpoint and is idempotent.
+
+This is distinct from the inbound signature helper below — `Webhooks()` manages
+the endpoints you register, while `VerifySignature` validates the deliveries
+the server sends to them.
+
 ### Webhook signature verification
 
 `VerifySignature` is a standalone helper — it needs no client:

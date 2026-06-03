@@ -134,6 +134,37 @@ $url = $rerout->qr()->url('promo', new QrOptions(
 $svg = $rerout->qr()->svg('promo', new QrOptions(size: 8));
 ```
 
+### Webhook endpoint management
+
+Manage the project's webhook endpoints with an API key. The project is resolved
+from the key — there is no project id in the path. The `signingSecret` is
+returned **once** on create; store it to verify deliveries.
+
+```php
+use Rerout\Models\CreateWebhookInput;
+
+// Create an endpoint.
+$created = $rerout->webhooks()->create(new CreateWebhookInput(
+    name: 'Order events',
+    url: 'https://example.com/hooks/rerout',
+    events: ['link.created', 'link.clicked'],
+    isActive: true,        // optional, default true
+    payloadFormat: 'json', // optional, 'json' | 'slack'
+));
+echo $created->endpoint->id;       // wh_…
+echo $created->signingSecret;      // whsec_… — shown once, store it now
+
+// List endpoints + every event type the server can deliver.
+$result = $rerout->webhooks()->list();
+foreach ($result->endpoints as $endpoint) {
+    echo $endpoint->url, PHP_EOL;
+}
+$allEventTypes = $result->eventTypes; // list<string>
+
+// Delete an endpoint (idempotent).
+$deleted = $rerout->webhooks()->delete('wh_abc123'); // bool
+```
+
 ### Webhook signature verification
 
 Rerout signs every webhook delivery with an `X-Rerout-Signature` header in the

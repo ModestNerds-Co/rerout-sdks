@@ -55,6 +55,24 @@ internal const val SAMPLE_LINK_JSON_NO_TAGS: String = """
 }
 """
 
+/** A sample webhook endpoint JSON body reused across tests. */
+internal const val SAMPLE_WEBHOOK_JSON: String = """
+{
+  "id": "wh_abc123",
+  "project_id": "prj_test",
+  "name": "Order events",
+  "url": "https://example.com/hooks/rerout",
+  "events": ["link.created", "link.clicked"],
+  "is_active": true,
+  "payload_format": "json",
+  "created_at": 1700000000,
+  "updated_at": 1700000000,
+  "last_delivery_at": null,
+  "last_success_at": null,
+  "last_failure_at": null
+}
+"""
+
 /** A `MockResponse` carrying a JSON body and a 200 status. */
 internal fun jsonResponse(body: String, status: Int = 200): MockResponse =
     MockResponse()

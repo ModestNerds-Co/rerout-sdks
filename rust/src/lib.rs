@@ -28,11 +28,12 @@
 //!
 //! # Namespaces
 //!
-//! The [`Rerout`] client exposes three namespaces:
+//! The [`Rerout`] client exposes four namespaces:
 //!
 //! - [`Rerout::links`] — create, list, get, update, delete, and per-link stats.
 //! - [`Rerout::project`] — aggregate project stats and project metadata.
 //! - [`Rerout::qr`] — a pure QR URL builder plus an authenticated SVG fetch.
+//! - [`Rerout::webhooks`] — create, list, and delete webhook endpoints.
 //!
 //! # Error handling
 //!
@@ -56,6 +57,7 @@ mod links;
 mod models;
 mod project;
 mod qr;
+mod webhooks_management;
 
 pub mod webhooks;
 
@@ -63,10 +65,12 @@ pub use client::{ClientBuilder, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_SECONDS, Rerou
 pub use error::{ApiErrorDetails, ReroutError, Result};
 pub use links::Links;
 pub use models::{
-    CreateLinkInput, DailyClicksPoint, DeleteLinkResult, Link, LinkStats, ListLinksParams,
-    ListLinksResult, ProjectInfo, ProjectStats, QrEcc, QrOptions, QrRefresh, StatsBreakdown, Tag,
-    UpdateLinkInput,
+    CreateLinkInput, CreateWebhookInput, CreatedWebhook, DailyClicksPoint, DeleteLinkResult,
+    DeleteWebhookResult, Link, LinkStats, ListLinksParams, ListLinksResult, ListWebhooksResult,
+    ProjectInfo, ProjectStats, QrEcc, QrOptions, QrRefresh, StatsBreakdown, Tag, UpdateLinkInput,
+    Webhook, WebhookPayloadFormat,
 };
 pub use project::Project;
 pub use qr::{Qr, build_qr_url};
 pub use webhooks::{DEFAULT_TOLERANCE_SECONDS, verify_rerout_signature};
+pub use webhooks_management::Webhooks;

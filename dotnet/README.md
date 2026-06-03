@@ -116,6 +116,41 @@ string svg = await rerout.Qr.SvgAsync("q4", new QrOptions { Size = 8 });
 The QR endpoint is API-key authenticated, so a bare `<img>` tag cannot load it
 directly — proxy the request server-side, or use `SvgAsync`.
 
+### Webhook management
+
+Register, list, and remove webhook endpoints for the project that owns the API
+key. The project is resolved from the key, so no project id appears in the path.
+
+```csharp
+using Rerout.Models;
+
+// Create an endpoint. The signing secret is returned once — store it now.
+var created = await rerout.Webhooks.CreateAsync(new CreateWebhookInput
+{
+    Name = "Production",
+    Url = "https://hooks.brand.com/rerout",
+    Events = ["link.created", "link.clicked"],
+    // IsActive = false,         // optional — defaults to active
+    // PayloadFormat = "slack",  // optional — "json" (default) or "slack"
+});
+
+Console.WriteLine(created.Endpoint.Id);      // wh_…
+Console.WriteLine(created.SigningSecret);    // whsec_… — shown only here
+
+// List endpoints and every event type the server can deliver.
+var list = await rerout.Webhooks.ListAsync();
+foreach (var endpoint in list.Endpoints)
+{
+    Console.WriteLine($"{endpoint.Id} → {endpoint.Url}");
+}
+
+// Delete an endpoint by id. Idempotent.
+await rerout.Webhooks.DeleteAsync(created.Endpoint.Id);
+```
+
+The `SigningSecret` from `CreateAsync` is shown once — persist it and use it
+with `SignatureVerifier` (below) to verify inbound deliveries.
+
 ### Webhook signature verification
 
 ```csharp

@@ -6,8 +6,8 @@
     <AssemblyName>Rerout.AspNetCore</AssemblyName>
 
     <PackageId>Rerout.AspNetCore</PackageId>
-    <Version>0.2.0</Version>
-    <PackageVersion>0.2.0</PackageVersion>
+    <Version>0.3.0</Version>
+    <PackageVersion>0.3.0</PackageVersion>
     <Description>ASP.NET Core integration for the Rerout branded-link SDK. Registers the Rerout client in DI and adds a signature-verified webhook endpoint.</Description>
     <PackageTags>rerout;aspnetcore;short-links;qr;webhooks;sdk</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -18,14 +18,14 @@ Gradle (Kotlin DSL):
 
 ```kotlin
 dependencies {
-    implementation("co.rerout:rerout-kotlin:0.2.0")
+    implementation("co.rerout:rerout-kotlin:0.3.0")
 }
 ```
 
 Gradle (Groovy DSL):
 
 ```groovy
-implementation 'co.rerout:rerout-kotlin:0.2.0'
+implementation 'co.rerout:rerout-kotlin:0.3.0'
 ```
 
 Maven:
@@ -34,7 +34,7 @@ Maven:
 <dependency>
   <groupId>co.rerout</groupId>
   <artifactId>rerout-kotlin</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
@@ -157,6 +157,37 @@ val svg: String = rerout.qr.svg("sale", QrOptions(size = 16))
 
 The QR endpoint is API-key authenticated, so `url()` output cannot be embedded
 directly in an `<img>` tag in a browser — proxy it server-side or use `svg()`.
+
+## Webhook management
+
+Register, list, and remove webhook endpoints for the project that owns the API
+key. All three calls hit `/v1/projects/me/webhooks` and are API-key
+authenticated.
+
+```kotlin
+import co.rerout.sdk.CreateWebhookInput
+
+// Create — the signing secret (`whsec_…`) is returned ONCE. Persist it now to
+// verify deliveries later; it is never shown again.
+val created = rerout.webhooks.create(
+    CreateWebhookInput(
+        name = "Slack alerts",
+        url = "https://hooks.example.com/rerout",
+        events = listOf("link.created", "link.clicked"),
+    ),
+)
+println(created.endpoint.id)
+println(created.signingSecret) // whsec_… — store it securely
+
+// List — registered endpoints plus every event type the server can deliver.
+val webhooks = rerout.webhooks.list()
+for (endpoint in webhooks.endpoints) println("${endpoint.name} -> ${endpoint.url}")
+println(webhooks.eventTypes)
+
+// Delete
+val result = rerout.webhooks.delete(created.endpoint.id)
+println(result.deleted)
+```
 
 ## Webhook signature verification
 

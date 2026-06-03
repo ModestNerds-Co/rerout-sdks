@@ -5,11 +5,13 @@ require_relative 'rerout/error'
 require_relative 'rerout/models'
 require_relative 'rerout/create_link_input'
 require_relative 'rerout/update_link_input'
+require_relative 'rerout/create_webhook_input'
 require_relative 'rerout/qr_options'
 require_relative 'rerout/webhooks'
 require_relative 'rerout/links'
 require_relative 'rerout/project'
 require_relative 'rerout/qr'
+require_relative 'rerout/webhooks_resource'
 require_relative 'rerout/client'
 
 # Official Ruby SDK for the Rerout branded-link API.

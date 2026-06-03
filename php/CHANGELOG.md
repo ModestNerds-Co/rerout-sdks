@@ -4,6 +4,14 @@ All notable changes to `rerout/sdk` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-03
+
+### Added
+
+- Webhook endpoint management via a new `webhooks()` namespace — `create`,
+  `list`, and `delete` against `/v1/projects/me/webhooks` (API-key auth). The
+  signing secret returned by `create` is shown once.
+
 ## [0.2.0] - 2026-06-02
 
 ### Added
@@ -42,5 +50,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `unauthorized`, `forbidden`, `not_found`, `rate_limited`, `server_error`,
   `client_error`) for responses without a JSON error body.
 
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/php-v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/php-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/php-v0.1.0

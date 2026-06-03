@@ -4,7 +4,8 @@ Official Java client for the [Rerout](https://rerout.co) API — branded link
 infrastructure on the edge.
 
 Create, list, update, and delete short links; read project and per-link
-analytics; build branded QR URLs; and verify inbound webhook signatures.
+analytics; build branded QR URLs; manage webhook endpoints; and verify inbound
+webhook signatures.
 
 - Pure Java 17 — no Kotlin runtime, no Scala, no framework
 - HTTP via the JDK's built-in `java.net.http.HttpClient`
@@ -199,6 +200,42 @@ String svg = rerout.qr().svg("sale", QrOptions.builder().size(16).build());
 
 The QR endpoint is API-key authenticated, so `url()` output cannot be embedded
 directly in a browser `<img>` tag — proxy it server-side or use `svg()`.
+
+## Webhook management
+
+Manage the webhook endpoints that receive signed event deliveries via
+`rerout.webhooks()`. These operations hit `/v1/projects/me/webhooks` and are
+API-key authenticated. Each operation ships in a blocking and an `…Async` form.
+
+```java
+import co.rerout.sdk.model.CreateWebhookInput;
+import co.rerout.sdk.model.CreatedWebhook;
+import co.rerout.sdk.model.ListWebhooksResult;
+import co.rerout.sdk.model.Webhook;
+import co.rerout.sdk.model.DeleteResult;
+
+// Create — the signing secret is returned ONCE, on creation only. Store it now;
+// it is never shown again and is what you pass to verifyReroutSignature later.
+CreatedWebhook created = rerout.webhooks().create(
+    CreateWebhookInput.builder("Prod receiver", "https://hooks.brand.com/rerout")
+        .events("link.clicked", "link.created")
+        .build());
+
+Webhook endpoint = created.getEndpoint();
+String signingSecret = created.getSigningSecret();   // shown once — save it
+System.out.println(endpoint.getId());
+
+// List — every endpoint on the project, plus the available event types.
+ListWebhooksResult webhooks = rerout.webhooks().list();
+for (Webhook w : webhooks.getEndpoints()) {
+    System.out.println(w.getName() + " → " + w.getUrl() + " (active=" + w.isActive() + ")");
+}
+System.out.println("Supported events: " + webhooks.getEventTypes());
+
+// Delete
+DeleteResult result = rerout.webhooks().delete(endpoint.getId());
+System.out.println(result.isDeleted());
+```
 
 ## Webhook signature verification
 

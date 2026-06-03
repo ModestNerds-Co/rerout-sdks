@@ -4,6 +4,13 @@ All notable changes to `rerout-django` are documented in this file. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-03
+
+### Changed
+
+- Bumped to track base `rerout` SDK `0.3.0`, which adds webhook endpoint
+  management (create/list/delete). No API changes in this package.
+
 ## [0.2.0] - 2026-06-02
 
 ### Changed
@@ -37,5 +44,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for type-specific subscription.
 - PEP 561 marker (`py.typed`) — full type hints.
 
+[0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-django-v0.1.0

@@ -80,6 +80,25 @@ rerout.qr.url(code, { size?, margin?, ecc?, domain?, refresh? }) // returns stri
 await rerout.qr.svg(code, opts) // fetches the rendered SVG
 ```
 
+### Webhook management
+
+```ts
+const webhook = await rerout.webhooks.create({
+  name: 'order-events',
+  url: 'https://api.brand.com/hooks/rerout',
+  events: ['link.clicked', 'qr.scanned'],
+})
+
+console.log(webhook.signing_secret) // shown once — store it now
+
+const { endpoints } = await rerout.webhooks.list()
+await rerout.webhooks.delete(webhook.endpoint.id)
+```
+
+The `signing_secret` returned by `create` is only returned once; persist it on
+receipt to verify inbound payloads (see below). Webhook management is API-key
+authed.
+
 ### Webhook signature verification
 
 ```ts

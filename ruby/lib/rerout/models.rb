@@ -301,5 +301,115 @@ module Rerout
         [self.class, id, name, slug].hash
       end
     end
+
+    # A webhook endpoint registered to the project. Mirrors the server-side
+    # `WebhookEndpointResponse`.
+    class Webhook
+      ATTRS = %i[
+        id project_id name url events is_active payload_format
+        created_at updated_at last_delivery_at last_success_at last_failure_at
+      ].freeze
+
+      attr_reader(*ATTRS)
+
+      def initialize(**attrs)
+        ATTRS.each { |k| instance_variable_set(:"@#{k}", attrs[k]) }
+        @events = (@events || []).freeze
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          id: hash['id'],
+          project_id: hash['project_id'],
+          name: hash['name'],
+          url: hash['url'],
+          events: hash['events'] || [],
+          is_active: hash['is_active'],
+          payload_format: hash['payload_format'],
+          created_at: hash['created_at'],
+          updated_at: hash['updated_at'],
+          last_delivery_at: hash['last_delivery_at'],
+          last_success_at: hash['last_success_at'],
+          last_failure_at: hash['last_failure_at']
+        )
+      end
+
+      def to_h
+        ATTRS.to_h { |k| [k, public_send(k)] }
+      end
+
+      def ==(other)
+        other.is_a?(Webhook) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
+    # Result of creating a webhook. The `signing_secret` (`whsec_…`) is
+    # returned **once** — store it now; it is never shown again.
+    class CreatedWebhook
+      attr_reader :endpoint, :signing_secret
+
+      def initialize(endpoint:, signing_secret:)
+        @endpoint = endpoint
+        @signing_secret = signing_secret
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          endpoint: Webhook.from_hash(hash['endpoint'] || {}),
+          signing_secret: hash['signing_secret']
+        )
+      end
+
+      def to_h
+        { endpoint: endpoint.to_h, signing_secret: signing_secret }
+      end
+
+      def ==(other)
+        other.is_a?(CreatedWebhook) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
+    # List of webhook endpoints plus every event type the server can deliver.
+    class ListWebhooksResult
+      attr_reader :endpoints, :event_types
+
+      def initialize(endpoints:, event_types:)
+        @endpoints = endpoints.freeze
+        @event_types = event_types.freeze
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          endpoints: (hash['endpoints'] || []).map { |e| Webhook.from_hash(e) },
+          event_types: hash['event_types'] || []
+        )
+      end
+
+      def to_h
+        { endpoints: endpoints.map(&:to_h), event_types: event_types }
+      end
+
+      def ==(other)
+        other.is_a?(ListWebhooksResult) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
   end
 end

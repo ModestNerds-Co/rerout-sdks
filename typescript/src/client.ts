@@ -2,10 +2,13 @@ import { ReroutError } from './errors.js'
 import { buildQrUrl } from './qr.js'
 import type {
   CreateLinkInput,
+  CreatedWebhook,
+  CreateWebhookInput,
   Link,
   LinkStats,
   ListLinksParams,
   ListLinksResult,
+  ListWebhooksResult,
   ProjectStats,
   QrUrlOptions,
   UpdateLinkInput,
@@ -56,6 +59,8 @@ export class Rerout {
   readonly project: Project
   /** QR helpers (pure URL builders + signed fetch). */
   readonly qr: Qr
+  /** Webhook endpoint management: create, list, delete. */
+  readonly webhooks: Webhooks
 
   private readonly apiKey: string
   private readonly baseUrl: string
@@ -91,6 +96,7 @@ export class Rerout {
     this.links = new Links(this)
     this.project = new Project(this)
     this.qr = new Qr(this)
+    this.webhooks = new Webhooks(this)
   }
 
   /** @internal — invoked by Links / Project / Qr. */
@@ -268,6 +274,39 @@ export class Project {
     return this.client.request<{ id: string; name: string; slug: string }>({
       method: 'GET',
       path: '/v1/projects/me',
+    })
+  }
+}
+
+export class Webhooks {
+  /** @internal */
+  constructor(private readonly client: Rerout) {}
+
+  /**
+   * Create a webhook endpoint for the project that owns the API key. The
+   * returned `signing_secret` is shown once — persist it to verify deliveries.
+   */
+  create(input: CreateWebhookInput): Promise<CreatedWebhook> {
+    return this.client.request<CreatedWebhook>({
+      method: 'POST',
+      path: '/v1/projects/me/webhooks',
+      body: input,
+    })
+  }
+
+  /** List webhook endpoints and the event types the server can deliver. */
+  list(): Promise<ListWebhooksResult> {
+    return this.client.request<ListWebhooksResult>({
+      method: 'GET',
+      path: '/v1/projects/me/webhooks',
+    })
+  }
+
+  /** Soft-delete an endpoint and abandon its pending deliveries. */
+  delete(endpointId: string): Promise<{ deleted: boolean }> {
+    return this.client.request<{ deleted: boolean }>({
+      method: 'DELETE',
+      path: `/v1/projects/me/webhooks/${encodeURIComponent(endpointId)}`,
     })
   }
 }

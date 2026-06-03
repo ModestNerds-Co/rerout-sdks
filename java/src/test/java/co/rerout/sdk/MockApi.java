@@ -290,4 +290,21 @@ final class MockApi implements AutoCloseable {
             + "\"updated_at\":1716000000,"
             + "\"tags\":[]"
             + "}";
+
+    /** A sample webhook endpoint JSON body reused across tests. */
+    static final String SAMPLE_WEBHOOK_JSON =
+            "{"
+            + "\"id\":\"wh_abc123\","
+            + "\"project_id\":\"prj_test\","
+            + "\"name\":\"Order events\","
+            + "\"url\":\"https://example.com/hooks/rerout\","
+            + "\"events\":[\"link.created\",\"link.clicked\"],"
+            + "\"is_active\":true,"
+            + "\"payload_format\":\"json\","
+            + "\"created_at\":1700000000,"
+            + "\"updated_at\":1700000000,"
+            + "\"last_delivery_at\":null,"
+            + "\"last_success_at\":null,"
+            + "\"last_failure_at\":null"
+            + "}";
 }

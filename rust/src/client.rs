@@ -12,6 +12,7 @@ use crate::error::{ReroutError, Result, build_api_error};
 use crate::links::Links;
 use crate::project::Project;
 use crate::qr::Qr;
+use crate::webhooks_management::Webhooks;
 
 /// Default production API base URL.
 pub const DEFAULT_BASE_URL: &str = "https://api.rerout.co";
@@ -201,6 +202,11 @@ impl Rerout {
     /// Access the QR helpers namespace.
     pub fn qr(&self) -> Qr<'_> {
         Qr::new(self)
+    }
+
+    /// Access the webhook endpoint management namespace — create, list, delete.
+    pub fn webhooks(&self) -> Webhooks<'_> {
+        Webhooks::new(self)
     }
 
     /// The resolved base URL — trailing slashes trimmed.

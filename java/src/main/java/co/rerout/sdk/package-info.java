@@ -12,8 +12,9 @@
  * <p>Entry point: {@link co.rerout.sdk.Rerout}. Construct a client with
  * {@link co.rerout.sdk.Rerout#create(String)} or
  * {@link co.rerout.sdk.Rerout#builder(String)}, then reach the
- * {@link co.rerout.sdk.Links}, {@link co.rerout.sdk.Project}, and
- * {@link co.rerout.sdk.Qr} namespaces.
+ * {@link co.rerout.sdk.Links}, {@link co.rerout.sdk.Project},
+ * {@link co.rerout.sdk.Qr}, and {@link co.rerout.sdk.WebhookEndpoints}
+ * namespaces.
  *
  * <p>Every network operation ships in a blocking form (returns the value,
  * throws {@link co.rerout.sdk.ReroutException}) and an async form (returns a

@@ -17,6 +17,7 @@ use Rerout\Exceptions\ReroutException;
 use Rerout\Resources\Links;
 use Rerout\Resources\Project;
 use Rerout\Resources\Qr;
+use Rerout\Resources\Webhooks;
 
 /**
  * Official PHP client for the Rerout branded-link API.
@@ -64,6 +65,7 @@ final class Rerout
     private readonly Links $links;
     private readonly Project $project;
     private readonly Qr $qr;
+    private readonly Webhooks $webhooks;
 
     /**
      * @param string                                                                              $apiKey  Project API key (`rrk_…`). Required.
@@ -92,6 +94,7 @@ final class Rerout
         $this->links = new Links($this);
         $this->project = new Project($this);
         $this->qr = new Qr($this);
+        $this->webhooks = new Webhooks($this);
     }
 
     /** Link operations: create, list, get, update, delete, stats. */
@@ -110,6 +113,12 @@ final class Rerout
     public function qr(): Qr
     {
         return $this->qr;
+    }
+
+    /** Webhook endpoint management: create, list, delete. */
+    public function webhooks(): Webhooks
+    {
+        return $this->webhooks;
     }
 
     /** The resolved API base URL (trailing slashes stripped). */

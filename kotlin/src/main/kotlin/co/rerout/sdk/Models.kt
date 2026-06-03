@@ -336,6 +336,83 @@ public data class LinkStats(
 )
 
 /**
+ * A webhook endpoint registered to the project.
+ *
+ * Field names mirror the server-side `WebhookEndpointResponse` shape so JSON is
+ * parsed without transformation. Reached via [Webhooks].
+ */
+@Serializable
+public data class Webhook(
+    /** Endpoint identifier — `wh_…`. */
+    val id: String,
+    /** Project that owns the endpoint. */
+    @SerialName("project_id") val projectId: String,
+    /** Human-readable label for the endpoint. */
+    val name: String,
+    /** Public `https://` URL that receives signed POST deliveries. */
+    val url: String,
+    /** Event types this endpoint subscribes to (e.g. `link.created`). */
+    val events: List<String> = emptyList(),
+    /** Whether the endpoint is currently active. */
+    @SerialName("is_active") val isActive: Boolean,
+    /** Delivery payload encoding — `json` or `slack`. */
+    @SerialName("payload_format") val payloadFormat: String,
+    /** Unix seconds — endpoint creation time. */
+    @SerialName("created_at") val createdAt: Long,
+    /** Unix seconds — last mutation. */
+    @SerialName("updated_at") val updatedAt: Long,
+    /** Unix seconds — last delivery attempt, or null if none yet. */
+    @SerialName("last_delivery_at") val lastDeliveryAt: Long? = null,
+    /** Unix seconds — last successful delivery, or null if none yet. */
+    @SerialName("last_success_at") val lastSuccessAt: Long? = null,
+    /** Unix seconds — last failed delivery, or null if none yet. */
+    @SerialName("last_failure_at") val lastFailureAt: Long? = null,
+)
+
+/**
+ * Request body for creating a webhook endpoint.
+ *
+ * [name], [url], and a non-empty [events] list are required. Optional fields are
+ * omitted from the JSON when left `null` so server-side defaults apply.
+ */
+@Serializable
+public data class CreateWebhookInput(
+    /** Human-readable label for the endpoint. */
+    val name: String,
+    /** Public `https://` URL that receives signed POST deliveries. */
+    val url: String,
+    /** Event types to subscribe to (e.g. `link.created`). At least one. */
+    val events: List<String>,
+    /** Whether the endpoint starts active. Defaults to `true` server-side. */
+    @SerialName("is_active") val isActive: Boolean? = null,
+    /** Payload encoding — `json` or `slack`. Defaults to `json` server-side. */
+    @SerialName("payload_format") val payloadFormat: String? = null,
+)
+
+/**
+ * Result of creating a webhook endpoint.
+ *
+ * The [signingSecret] (`whsec_…`) is returned **once** — store it now to verify
+ * deliveries with [ReroutWebhooks.verifySignature]; it is never shown again.
+ */
+@Serializable
+public data class CreatedWebhook(
+    /** The newly created endpoint. */
+    val endpoint: Webhook,
+    /** The signing secret (`whsec_…`). Surfaced only on create. */
+    @SerialName("signing_secret") val signingSecret: String,
+)
+
+/** A list of webhook endpoints plus the event types the server can deliver. */
+@Serializable
+public data class ListWebhooksResult(
+    /** The project's registered webhook endpoints. */
+    val endpoints: List<Webhook> = emptyList(),
+    /** Every event type the server can deliver. */
+    @SerialName("event_types") val eventTypes: List<String> = emptyList(),
+)
+
+/**
  * QR rendering parameters for [Qr.url] / [Qr.svg].
  *
  * All fields are optional — omit any to use the server default.

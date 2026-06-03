@@ -133,6 +133,36 @@ QR options:
 | `domain`  | `str`                      | Force the QR to encode a specific verified custom domain.             |
 | `refresh` | `str \| bool`              | Cache-bust on regenerate. `True` is sent as `1`; strings pass through. |
 
+### Webhook management
+
+Register, list, and remove webhook endpoints for the project that owns the
+API key. The project is resolved from the key, so no project id appears in
+the path.
+
+```python
+from rerout import CreateWebhookInput
+
+created = rerout.webhooks.create(
+    CreateWebhookInput(
+        name="Prod deliveries",
+        url="https://hooks.brand.com/rerout",
+        events=["link.clicked", "link.created"],
+    )
+)
+print(created.endpoint.id)
+print(created.signing_secret)  # whsec_… — shown once, store it now
+
+result = rerout.webhooks.list()
+for endpoint in result.endpoints:
+    print(endpoint.id, endpoint.url, endpoint.events)
+print(result.event_types)  # event types the server can deliver
+
+rerout.webhooks.delete(created.endpoint.id)  # -> True (idempotent)
+```
+
+The `signing_secret` returned by `create` is shown once — persist it and use
+it with `verify_rerout_signature` (below) to authenticate deliveries.
+
 ### Webhook signature verification
 
 ```python
