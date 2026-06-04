@@ -118,11 +118,103 @@ void main() {
     });
   });
 
+  group('CreateLinkRequest Smart Links', () {
+    test('forwards password, max_clicks, track_conversions', () {
+      const r = CreateLinkRequest(
+        targetUrl: 'https://example.com',
+        password: 's3cret',
+        maxClicks: 100,
+        trackConversions: true,
+      );
+      final json = r.toJson();
+      expect(json['password'], 's3cret');
+      expect(json['max_clicks'], 100);
+      expect(json['track_conversions'], true);
+    });
+
+    test('serializes routing_rules and ab_variants', () {
+      const r = CreateLinkRequest(
+        targetUrl: 'https://example.com',
+        routingRules: [
+          RoutingRule(
+            conditionType: 'country',
+            conditionOp: 'is',
+            conditionValue: 'ZA',
+            targetUrl: 'https://example.com/za',
+          ),
+        ],
+        abVariants: [
+          AbVariantInput(targetUrl: 'https://example.com/a'),
+          AbVariantInput(targetUrl: 'https://example.com/b', weight: 3),
+        ],
+      );
+      final json = r.toJson();
+      expect(json['routing_rules'], [
+        {
+          'condition_type': 'country',
+          'condition_op': 'is',
+          'condition_value': 'ZA',
+          'target_url': 'https://example.com/za',
+        },
+      ]);
+      expect(json['ab_variants'], [
+        {'target_url': 'https://example.com/a'},
+        {'target_url': 'https://example.com/b', 'weight': 3},
+      ]);
+    });
+  });
+
   group('UpdateLinkRequest', () {
     test('isEmpty when nothing is set', () {
       const r = UpdateLinkRequest();
       expect(r.isEmpty, isTrue);
       expect(r.toJson(), <String, dynamic>{});
+    });
+
+    test('clearPassword and clearMaxClicks emit explicit nulls', () {
+      const r = UpdateLinkRequest(clearPassword: true, clearMaxClicks: true);
+      expect(r.toJson(), {'password': null, 'max_clicks': null});
+      expect(r.isEmpty, isFalse);
+    });
+
+    test('clear flags override set values', () {
+      const r = UpdateLinkRequest(
+        password: 'x',
+        clearPassword: true,
+        maxClicks: 5,
+        clearMaxClicks: true,
+      );
+      expect(r.toJson(), {'password': null, 'max_clicks': null});
+    });
+
+    test('full-replaces routing_rules and ab_variants', () {
+      const r = UpdateLinkRequest(
+        trackConversions: false,
+        routingRules: [
+          RoutingRule(
+            conditionType: 'device',
+            conditionOp: 'in',
+            conditionValue: 'mobile,tablet',
+            targetUrl: 'https://example.com/m',
+          ),
+        ],
+        abVariants: [
+          AbVariantInput(targetUrl: 'https://example.com/x', weight: 2),
+        ],
+      );
+      final json = r.toJson();
+      expect(json['track_conversions'], false);
+      expect(json['routing_rules'], [
+        {
+          'condition_type': 'device',
+          'condition_op': 'in',
+          'condition_value': 'mobile,tablet',
+          'target_url': 'https://example.com/m',
+        },
+      ]);
+      expect(json['ab_variants'], [
+        {'target_url': 'https://example.com/x', 'weight': 2},
+      ]);
     });
 
     test('clearExpiresAt emits explicit null', () {
@@ -204,6 +296,143 @@ void main() {
         'updated_at': 1700000100,
       });
       expect(link.tags, isEmpty);
+    });
+
+    test('parses Smart Links fields', () {
+      final link = ShortLink.fromJson({
+        'code': 'q4',
+        'short_url': 'https://rerout.co/q4',
+        'target_url': 'https://example.com',
+        'project_id': 'prj_test',
+        'is_active': true,
+        'seo_noindex': true,
+        'created_at': 1700000000,
+        'updated_at': 1700000100,
+        'password_protected': true,
+        'max_clicks': 100,
+        'click_count': 42,
+        'track_conversions': true,
+        'routing_rules': [
+          {
+            'condition_type': 'country',
+            'condition_op': 'is',
+            'condition_value': 'ZA',
+            'target_url': 'https://example.com/za',
+          },
+        ],
+        'ab_variants': [
+          {'id': 1, 'target_url': 'https://example.com/a', 'weight': 1},
+          {'id': 2, 'target_url': 'https://example.com/b', 'weight': 3},
+        ],
+      });
+      expect(link.passwordProtected, isTrue);
+      expect(link.maxClicks, 100);
+      expect(link.clickCount, 42);
+      expect(link.trackConversions, isTrue);
+      expect(link.routingRules, hasLength(1));
+      expect(link.routingRules.first.conditionValue, 'ZA');
+      expect(link.abVariants, hasLength(2));
+      expect(link.abVariants[1].id, 2);
+      expect(link.abVariants[1].weight, 3);
+    });
+
+    test('defaults Smart Links fields when absent', () {
+      final link = ShortLink.fromJson({
+        'code': 'q4',
+        'short_url': 'https://rerout.co/q4',
+        'target_url': 'https://example.com',
+        'project_id': 'prj_test',
+        'is_active': true,
+        'seo_noindex': true,
+        'created_at': 1700000000,
+        'updated_at': 1700000100,
+      });
+      expect(link.passwordProtected, isFalse);
+      expect(link.maxClicks, isNull);
+      expect(link.clickCount, 0);
+      expect(link.trackConversions, isFalse);
+      expect(link.routingRules, isEmpty);
+      expect(link.abVariants, isEmpty);
+    });
+  });
+
+  group('RecordConversionRequest', () {
+    test('omits null optional fields', () {
+      const r = RecordConversionRequest(
+        clickId: 'rrid_abc',
+        eventName: 'purchase',
+      );
+      expect(r.toJson(), {'click_id': 'rrid_abc', 'event_name': 'purchase'});
+    });
+
+    test('includes value_cents and currency when set', () {
+      const r = RecordConversionRequest(
+        clickId: 'rrid_abc',
+        eventName: 'purchase',
+        valueCents: 4999,
+        currency: 'USD',
+      );
+      final json = r.toJson();
+      expect(json['value_cents'], 4999);
+      expect(json['currency'], 'USD');
+    });
+  });
+
+  group('RecordedConversion.fromJson', () {
+    test('parses recorded + duplicate', () {
+      final r = RecordedConversion.fromJson({
+        'recorded': true,
+        'duplicate': true,
+      });
+      expect(r.recorded, isTrue);
+      expect(r.duplicate, isTrue);
+    });
+
+    test('defaults to false when fields absent', () {
+      final r = RecordedConversion.fromJson(<String, dynamic>{});
+      expect(r.recorded, isFalse);
+      expect(r.duplicate, isFalse);
+    });
+  });
+
+  group('BatchCreateLinksResult.fromJson', () {
+    test('parses created, total, and per-item results', () {
+      final r = BatchCreateLinksResult.fromJson({
+        'created': 1,
+        'total': 2,
+        'results': [
+          {'index': 0, 'ok': true, 'code': 'aaa111'},
+          {'index': 1, 'ok': false, 'error': 'code already in use'},
+        ],
+      });
+      expect(r.created, 1);
+      expect(r.total, 2);
+      expect(r.results, hasLength(2));
+      expect(r.results.first.code, 'aaa111');
+      expect(r.results[1].ok, isFalse);
+      expect(r.results[1].error, 'code already in use');
+    });
+  });
+
+  group('BatchLinkInput.toJson', () {
+    test('omits null optional fields', () {
+      const item = BatchLinkInput(targetUrl: 'https://example.com');
+      expect(item.toJson(), {'target_url': 'https://example.com'});
+    });
+
+    test('includes code, expires_at, domain_hostname when set', () {
+      const item = BatchLinkInput(
+        targetUrl: 'https://example.com',
+        code: 'two',
+        expiresAt: 1700000000,
+        domainHostname: 'go.brand.com',
+      );
+      expect(item.toJson(), {
+        'target_url': 'https://example.com',
+        'code': 'two',
+        'expires_at': 1700000000,
+        'domain_hostname': 'go.brand.com',
+      });
     });
   });
 

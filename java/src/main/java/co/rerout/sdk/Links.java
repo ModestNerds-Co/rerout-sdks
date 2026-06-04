@@ -10,6 +10,8 @@ package co.rerout.sdk;
 import co.rerout.sdk.internal.HttpTransport;
 import co.rerout.sdk.internal.HttpTransport.Method;
 import co.rerout.sdk.internal.RequestSpec;
+import co.rerout.sdk.model.BatchCreateLinksResult;
+import co.rerout.sdk.model.BatchLinkInput;
 import co.rerout.sdk.model.CreateLinkInput;
 import co.rerout.sdk.model.DeleteResult;
 import co.rerout.sdk.model.Link;
@@ -17,6 +19,7 @@ import co.rerout.sdk.model.LinkStats;
 import co.rerout.sdk.model.ListLinksResult;
 import co.rerout.sdk.model.UpdateLinkInput;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -64,6 +67,37 @@ public final class Links {
         return transport
                 .executeAsync(RequestSpec.withBody(Method.POST, path, body))
                 .thenApply(text -> transport.decode(text, Link.class, path));
+    }
+
+    // ─── createBatch ────────────────────────────────────────────────────────
+
+    /**
+     * Creates many links in one request. Each item is created independently;
+     * the result reports per-link success/failure in submission order — a
+     * failure on one item does not abort the rest.
+     *
+     * @param links the links to create
+     * @return the batch result
+     * @throws ReroutException on any failure
+     */
+    public BatchCreateLinksResult createBatch(List<BatchLinkInput> links) {
+        return join(createBatchAsync(links));
+    }
+
+    /**
+     * Creates many links in one request asynchronously.
+     *
+     * @param links the links to create
+     * @return a future of the batch result
+     */
+    public CompletableFuture<BatchCreateLinksResult> createBatchAsync(List<BatchLinkInput> links) {
+        String path = "/v1/links/batch";
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("links", links);
+        String body = transport.gson().toJson(payload);
+        return transport
+                .executeAsync(RequestSpec.withBody(Method.POST, path, body))
+                .thenApply(text -> transport.decode(text, BatchCreateLinksResult.class, path));
     }
 
     // ─── list ───────────────────────────────────────────────────────────────

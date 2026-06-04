@@ -29,6 +29,37 @@ func (l *Links) Create(ctx context.Context, input CreateLinkInput) (*Link, error
 	return &out, nil
 }
 
+// CreateBatch creates multiple links in a single request via POST
+// /v1/links/batch. The returned BatchCreateLinksResult reports the per-item
+// outcome: each result carries its input Index, an OK flag, and either the new
+// Code (on success) or an Error string (on failure). A partial success is
+// possible — Created may be less than Total.
+//
+// An empty input slice is a client-side error and never hits the API.
+func (l *Links) CreateBatch(ctx context.Context, links []BatchLinkInput) (*BatchCreateLinksResult, error) {
+	if len(links) == 0 {
+		return nil, &ReroutError{
+			Code:    CodeBadRequest,
+			Status:  0,
+			Message: "rerout: CreateBatch requires at least one link.",
+			Path:    "/v1/links/batch",
+		}
+	}
+	body := struct {
+		Links []BatchLinkInput `json:"links"`
+	}{Links: links}
+	var out BatchCreateLinksResult
+	err := l.client.do(ctx, requestOptions{
+		method: "POST",
+		path:   "/v1/links/batch",
+		body:   body,
+	}, &out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // List returns a paginated page of links. Pass nil for default cursor / limit.
 func (l *Links) List(ctx context.Context, params *ListLinksParams) (*ListLinksResult, error) {
 	var q url.Values

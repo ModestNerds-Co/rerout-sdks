@@ -22,9 +22,9 @@ import java.time.Duration;
 /**
  * Official client for the Rerout API.
  *
- * <p>The client exposes four namespaces — {@link #links()}, {@link #project()},
- * {@link #qr()}, and {@link #webhooks()}. Every network operation ships in two
- * forms:
+ * <p>The client exposes five namespaces — {@link #links()}, {@link #project()},
+ * {@link #qr()}, {@link #webhooks()}, and {@link #conversions()}. Every network
+ * operation ships in two forms:
  *
  * <ul>
  *   <li>a <strong>blocking</strong> method (for example {@code links().create(…)})
@@ -68,7 +68,7 @@ public final class Rerout {
     public static final String DEFAULT_BASE_URL = "https://api.rerout.co";
 
     /** SDK version, surfaced in the {@code User-Agent} header. */
-    public static final String SDK_VERSION = "0.1.0";
+    public static final String SDK_VERSION = "0.4.0";
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
@@ -77,6 +77,7 @@ public final class Rerout {
     private final Project project;
     private final Qr qr;
     private final WebhookEndpoints webhooks;
+    private final Conversions conversions;
 
     private Rerout(Builder b) {
         if (b.apiKey == null || b.apiKey.trim().isEmpty()) {
@@ -113,6 +114,7 @@ public final class Rerout {
         this.project = new Project(transport);
         this.qr = new Qr(transport, resolved);
         this.webhooks = new WebhookEndpoints(transport);
+        this.conversions = new Conversions(transport);
     }
 
     /**
@@ -167,6 +169,11 @@ public final class Rerout {
      */
     public WebhookEndpoints webhooks() {
         return webhooks;
+    }
+
+    /** {@return the conversion tracking namespace — record conversion events} */
+    public Conversions conversions() {
+        return conversions;
     }
 
     /**

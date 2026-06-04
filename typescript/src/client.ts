@@ -1,6 +1,8 @@
 import { ReroutError } from './errors.js'
 import { buildQrUrl } from './qr.js'
 import type {
+  BatchCreateLinksResult,
+  BatchLinkInput,
   CreateLinkInput,
   CreatedWebhook,
   CreateWebhookInput,
@@ -11,6 +13,8 @@ import type {
   ListWebhooksResult,
   ProjectStats,
   QrUrlOptions,
+  RecordConversionInput,
+  RecordedConversion,
   UpdateLinkInput,
 } from './types.js'
 
@@ -61,6 +65,8 @@ export class Rerout {
   readonly qr: Qr
   /** Webhook endpoint management: create, list, delete. */
   readonly webhooks: Webhooks
+  /** Conversion tracking: record a conversion against a prior click. */
+  readonly conversions: Conversions
 
   private readonly apiKey: string
   private readonly baseUrl: string
@@ -97,6 +103,7 @@ export class Rerout {
     this.project = new Project(this)
     this.qr = new Qr(this)
     this.webhooks = new Webhooks(this)
+    this.conversions = new Conversions(this)
   }
 
   /** @internal — invoked by Links / Project / Qr. */
@@ -212,6 +219,18 @@ export class Links {
     })
   }
 
+  /**
+   * Bulk-create links in one request. Each item succeeds or fails
+   * independently; inspect `results[i].ok` for per-item outcomes.
+   */
+  createBatch(links: BatchLinkInput[]): Promise<BatchCreateLinksResult> {
+    return this.client.request<BatchCreateLinksResult>({
+      method: 'POST',
+      path: '/v1/links/batch',
+      body: { links },
+    })
+  }
+
   /** Paginated list of links in the project. */
   list(params?: ListLinksParams): Promise<ListLinksResult> {
     return this.client.request<ListLinksResult>({
@@ -307,6 +326,23 @@ export class Webhooks {
     return this.client.request<{ deleted: boolean }>({
       method: 'DELETE',
       path: `/v1/projects/me/webhooks/${encodeURIComponent(endpointId)}`,
+    })
+  }
+}
+
+export class Conversions {
+  /** @internal */
+  constructor(private readonly client: Rerout) {}
+
+  /**
+   * Record a conversion attributed to a prior click via its `click_id`
+   * (`rrid`). Idempotent per `(click_id, event_name)`.
+   */
+  record(input: RecordConversionInput): Promise<RecordedConversion> {
+    return this.client.request<RecordedConversion>({
+      method: 'POST',
+      path: '/v1/conversions',
+      body: input,
     })
   }
 }

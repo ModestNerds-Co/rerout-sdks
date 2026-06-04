@@ -8,6 +8,7 @@ is a fresh :class:`httpx.Client` per :class:`Rerout` instance.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from typing import Any
 from urllib.parse import quote, urlencode
 
@@ -15,6 +16,7 @@ import httpx
 
 from ._errors import ReroutError
 from ._models import (
+    BatchCreateLinksResult,
     CreatedWebhook,
     CreateLinkInput,
     CreateWebhookInput,
@@ -25,6 +27,7 @@ from ._models import (
     ProjectInfo,
     ProjectStats,
     QrOptions,
+    RecordedConversion,
     UpdateLinkInput,
 )
 
@@ -49,6 +52,7 @@ class Rerout:
     project: Project
     qr: Qr
     webhooks: Webhooks
+    conversions: Conversions
 
     def __init__(
         self,
@@ -91,6 +95,7 @@ class Rerout:
         self.project = Project(self)
         self.qr = Qr(self)
         self.webhooks = Webhooks(self)
+        self.conversions = Conversions(self)
 
     @property
     def base_url(self) -> str:
@@ -245,9 +250,7 @@ def _error_from_response(status: int, body: str, path: str) -> ReroutError:
         status=status,
         details=parsed,
         path=path,
-        timestamp=(
-            str(server_timestamp) if isinstance(server_timestamp, str) else None
-        ),
+        timestamp=(str(server_timestamp) if isinstance(server_timestamp, str) else None),
     )
 
 
@@ -282,6 +285,38 @@ class Links:
             body=input.to_payload(),
         )
         return Link.from_dict(_expect_dict(data))
+
+    def create_batch(
+        self,
+        inputs: Iterable[CreateLinkInput | dict[str, Any]],
+    ) -> BatchCreateLinksResult:
+        """Create many links in one call via ``POST /v1/links/batch``.
+
+        Each item may be a :class:`CreateLinkInput` or a plain dict. Only the
+        batch-supported fields (``target_url``, ``code``, ``expires_at``,
+        ``domain_hostname``) are forwarded — the richer Smart Link fields are
+        not accepted by the batch endpoint.
+
+        Returns a :class:`BatchCreateLinksResult` carrying per-item outcomes;
+        a failed item does not raise — inspect ``result.results[i].ok``.
+
+        Raises:
+            ReroutError: With ``code='bad_request'`` if ``inputs`` is empty.
+        """
+        links = [_batch_link_payload(item) for item in inputs]
+        if not links:
+            raise ReroutError(
+                code="bad_request",
+                message="create_batch requires at least one link.",
+                status=0,
+                path="/v1/links/batch",
+            )
+        data = self._client._request(
+            "POST",
+            "/v1/links/batch",
+            body={"links": links},
+        )
+        return BatchCreateLinksResult.from_dict(_expect_dict(data))
 
     def list(
         self,
@@ -415,6 +450,48 @@ class Webhooks:
         return True
 
 
+class Conversions:
+    """Conversion tracking: record a conversion against a recorded click."""
+
+    def __init__(self, client: Rerout) -> None:
+        self._client = client
+
+    def record(
+        self,
+        click_id: str,
+        event_name: str,
+        *,
+        value_cents: int | None = None,
+        currency: str | None = None,
+    ) -> RecordedConversion:
+        """Record a conversion for a click via ``POST /v1/conversions``.
+
+        Args:
+            click_id: The id of the click being converted (from the redirect
+                tracking pixel / postback).
+            event_name: Name of the conversion event (e.g. ``"purchase"``).
+            value_cents: Optional monetary value of the conversion, in the
+                smallest currency unit (cents). Omitted when ``None``.
+            currency: Optional ISO-4217 currency code (e.g. ``"USD"``).
+                Omitted when ``None``.
+
+        Returns:
+            A :class:`RecordedConversion` with ``recorded`` and ``duplicate``
+            flags. The call is idempotent — a repeat for the same click +
+            event returns ``duplicate=True``.
+        """
+        body: dict[str, Any] = {
+            "click_id": click_id,
+            "event_name": event_name,
+        }
+        if value_cents is not None:
+            body["value_cents"] = value_cents
+        if currency is not None:
+            body["currency"] = currency
+        data = self._client._request("POST", "/v1/conversions", body=body)
+        return RecordedConversion.from_dict(_expect_dict(data))
+
+
 class Qr:
     """QR helpers — pure URL builder + signed SVG fetch."""
 
@@ -460,6 +537,37 @@ def _encode_code(code: str) -> str:
     escaped — mirroring ``encodeURIComponent`` in JS.
     """
     return quote(code, safe="")
+
+
+def _batch_link_payload(item: CreateLinkInput | dict[str, Any]) -> dict[str, Any]:
+    """Reduce a create-link input to the fields the batch endpoint accepts.
+
+    Only ``target_url`` (required), ``code``, ``expires_at``, and
+    ``domain_hostname`` are forwarded.
+    """
+    if isinstance(item, CreateLinkInput):
+        source = item.to_payload()
+    elif isinstance(item, dict):
+        source = item
+    else:
+        raise ReroutError(
+            code="bad_request",
+            message="Batch link items must be CreateLinkInput or dict.",
+            status=0,
+            path="/v1/links/batch",
+        )
+    if "target_url" not in source:
+        raise ReroutError(
+            code="bad_request",
+            message="Each batch link requires a target_url.",
+            status=0,
+            path="/v1/links/batch",
+        )
+    payload: dict[str, Any] = {"target_url": source["target_url"]}
+    for key in ("code", "expires_at", "domain_hostname"):
+        if source.get(key) is not None:
+            payload[key] = source[key]
+    return payload
 
 
 def _expect_dict(data: Any) -> dict[str, Any]:

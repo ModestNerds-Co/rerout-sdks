@@ -4,6 +4,30 @@ All notable changes to the `rerout` gem are documented in this file. The
 format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Link fields on `Rerout::Models::Link`: `password_protected`,
+  `max_clicks`, `click_count`, `track_conversions`, `routing_rules` (array of
+  `RoutingRule`), and `ab_variants` (array of `AbVariant`).
+- `Rerout::CreateLinkInput` gains optional `password`, `max_clicks`,
+  `track_conversions`, `routing_rules`, and `ab_variants`.
+- `Rerout::UpdateLinkInput` gains `password`, `max_clicks`,
+  `track_conversions`, `routing_rules`, and `ab_variants`. `password` and
+  `max_clicks` accept `Rerout::CLEAR` to send `null`; `routing_rules` and
+  `ab_variants` are a full replacement.
+- New `Rerout::Models::RoutingRule` and `Rerout::Models::AbVariant` value
+  objects. Routing-rule `condition_type` is `"country"` / `"device"`;
+  `condition_op` is `"is"` / `"is_not"` / `"in"`.
+- New `conversions` namespace — `client.conversions.record(click_id,
+  event_name, value_cents:, currency:)` against `POST /v1/conversions`,
+  returning a `Rerout::Models::RecordedConversion` (`recorded`, `duplicate`).
+- New `client.links.create_batch(inputs)` against `POST /v1/links/batch`,
+  returning a `Rerout::Models::BatchCreateLinksResult` (`created`, `total`,
+  `results` of `BatchLinkResult`).
+- New webhook event type `conversion.recorded`.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added

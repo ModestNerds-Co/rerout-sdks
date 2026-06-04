@@ -45,6 +45,10 @@ RSpec.describe Rerout::Client do
     it 'exposes the qr namespace' do
       expect(described_class.new(api_key: 'rrk_test').qr).to be_a(Rerout::Resources::Qr)
     end
+
+    it 'exposes the conversions namespace' do
+      expect(described_class.new(api_key: 'rrk_test').conversions).to be_a(Rerout::Resources::Conversions)
+    end
   end
 
   describe 'request transport' do

@@ -29,9 +29,15 @@ final readonly class Link
      * @param bool        $seoNoindex      Whether the preview HTML should be indexed.
      * @param int|null    $seoUpdatedAt    Unix seconds — last SEO field change.
      * @param int         $createdAt       Unix seconds — link creation time.
-     * @param int         $updatedAt       Unix seconds — last mutation.
-     * @param list<Tag>   $tags            Tags attached to the link. Read-only;
-     *                                     empty when none are bound.
+     * @param int                $updatedAt         Unix seconds — last mutation.
+     * @param list<Tag>          $tags              Tags attached to the link. Read-only;
+     *                                              empty when none are bound.
+     * @param bool               $passwordProtected Whether the link requires a password.
+     * @param int|null           $maxClicks         Click cap before the link stops resolving. Null for unlimited.
+     * @param int                $clickCount        Total clicks recorded so far.
+     * @param bool               $trackConversions  Whether conversion tracking is enabled.
+     * @param list<RoutingRule>  $routingRules      Smart-routing rules evaluated in order.
+     * @param list<AbVariant>    $abVariants        A/B test variants traffic is split across.
      */
     public function __construct(
         public string $code,
@@ -50,6 +56,12 @@ final readonly class Link
         public int $createdAt,
         public int $updatedAt,
         public array $tags = [],
+        public bool $passwordProtected = false,
+        public ?int $maxClicks = null,
+        public int $clickCount = 0,
+        public bool $trackConversions = false,
+        public array $routingRules = [],
+        public array $abVariants = [],
     ) {
     }
 
@@ -77,6 +89,12 @@ final readonly class Link
             createdAt: self::requireInt($data, 'created_at'),
             updatedAt: self::requireInt($data, 'updated_at'),
             tags: self::mapTags($data['tags'] ?? []),
+            passwordProtected: self::optionalBool($data, 'password_protected', false),
+            maxClicks: self::nullableInt($data, 'max_clicks'),
+            clickCount: self::optionalInt($data, 'click_count', 0),
+            trackConversions: self::optionalBool($data, 'track_conversions', false),
+            routingRules: self::mapRoutingRules($data['routing_rules'] ?? []),
+            abVariants: self::mapAbVariants($data['ab_variants'] ?? []),
         );
     }
 
@@ -93,6 +111,44 @@ final readonly class Link
             if (is_array($row)) {
                 /** @var array<string, mixed> $row */
                 $out[] = Tag::fromArray($row);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return list<RoutingRule>
+     */
+    private static function mapRoutingRules(mixed $raw): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $row) {
+            if (is_array($row)) {
+                /** @var array<string, mixed> $row */
+                $out[] = RoutingRule::fromArray($row);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return list<AbVariant>
+     */
+    private static function mapAbVariants(mixed $raw): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        $out = [];
+        foreach ($raw as $row) {
+            if (is_array($row)) {
+                /** @var array<string, mixed> $row */
+                $out[] = AbVariant::fromArray($row);
             }
         }
 
@@ -181,6 +237,22 @@ final readonly class Link
         }
         if (!is_bool($value)) {
             throw new InvalidArgumentException("Expected bool field '{$key}' in Link payload.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private static function optionalInt(array $data, string $key, int $default): int
+    {
+        $value = $data[$key] ?? null;
+        if ($value === null) {
+            return $default;
+        }
+        if (!is_int($value)) {
+            throw new InvalidArgumentException("Expected int field '{$key}' in Link payload.");
         }
 
         return $value;

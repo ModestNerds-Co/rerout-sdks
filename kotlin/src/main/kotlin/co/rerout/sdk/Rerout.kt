@@ -26,13 +26,13 @@ public const val DEFAULT_BASE_URL: String = "https://api.rerout.co"
 private val DEFAULT_TIMEOUT: Duration = Duration.ofSeconds(30)
 
 /** SDK version, surfaced in the `User-Agent` header. */
-internal const val SDK_VERSION: String = "0.1.0"
+internal const val SDK_VERSION: String = "0.4.0"
 
 /**
  * Official client for the Rerout API.
  *
- * The client exposes four namespaces: [links], [project], [qr], and
- * [webhooks]. All network calls are `suspend` functions and throw
+ * The client exposes five namespaces: [links], [project], [qr], [webhooks],
+ * and [conversions]. All network calls are `suspend` functions and throw
  * [ReroutException] on any failure.
  *
  * ## Usage
@@ -65,6 +65,9 @@ public class Rerout private constructor(
 
     /** Webhook endpoint management: create, list, delete. */
     public val webhooks: Webhooks = Webhooks(transport)
+
+    /** Conversion tracking: record a conversion against a prior click. */
+    public val conversions: Conversions = Conversions(transport)
 
     public companion object {
         /**

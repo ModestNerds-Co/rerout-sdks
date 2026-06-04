@@ -21,6 +21,30 @@ module Rerout
         Models::Link.from_hash(response)
       end
 
+      # Create many links in one call via `POST /v1/links/batch`.
+      #
+      # Each item may be a {Rerout::CreateLinkInput} or a plain Hash. Only the
+      # batch-supported fields (`target_url`, `code`, `expires_at`,
+      # `domain_hostname`) are forwarded — richer Smart Link fields are not
+      # accepted by the batch endpoint. A failed item does not raise; inspect
+      # `result.results[i].ok`.
+      #
+      # @param inputs [Array<Rerout::CreateLinkInput, Hash>]
+      # @return [Rerout::Models::BatchCreateLinksResult]
+      def create_batch(inputs)
+        links = Array(inputs).map { |item| batch_link_hash(item) }
+        if links.empty?
+          raise Error.new(
+            code: 'bad_request',
+            message: 'create_batch requires at least one link.',
+            status: 0
+          )
+        end
+
+        response = @client.request(method: :post, path: '/v1/links/batch', body: { 'links' => links })
+        Models::BatchCreateLinksResult.from_hash(response)
+      end
+
       # Paginated list of links.
       #
       # @param cursor [Integer, nil]
@@ -99,6 +123,28 @@ module Rerout
         else
           raise ArgumentError, 'input must be a Rerout::CreateLinkInput or Hash'
         end
+      end
+
+      # Reduce a create-link input to the fields the batch endpoint accepts:
+      # `target_url` (required), `code`, `expires_at`, `domain_hostname`.
+      def batch_link_hash(item)
+        source =
+          case item
+          when CreateLinkInput then item.to_h
+          when Hash then InputSerialization.stringify(item)
+          else
+            raise ArgumentError, 'batch link items must be a Rerout::CreateLinkInput or Hash'
+          end
+
+        unless source.key?('target_url') && !source['target_url'].to_s.empty?
+          raise ArgumentError, 'each batch link requires a target_url'
+        end
+
+        out = { 'target_url' => source['target_url'] }
+        %w[code expires_at domain_hostname].each do |key|
+          out[key] = source[key] unless source[key].nil?
+        end
+        out
       end
     end
   end

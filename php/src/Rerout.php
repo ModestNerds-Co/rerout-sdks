@@ -14,6 +14,7 @@ use GuzzleHttp\Psr7\Request as Psr7Request;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Rerout\Exceptions\ReroutException;
+use Rerout\Resources\Conversions;
 use Rerout\Resources\Links;
 use Rerout\Resources\Project;
 use Rerout\Resources\Qr;
@@ -66,6 +67,7 @@ final class Rerout
     private readonly Project $project;
     private readonly Qr $qr;
     private readonly Webhooks $webhooks;
+    private readonly Conversions $conversions;
 
     /**
      * @param string                                                                              $apiKey  Project API key (`rrk_…`). Required.
@@ -95,6 +97,7 @@ final class Rerout
         $this->project = new Project($this);
         $this->qr = new Qr($this);
         $this->webhooks = new Webhooks($this);
+        $this->conversions = new Conversions($this);
     }
 
     /** Link operations: create, list, get, update, delete, stats. */
@@ -119,6 +122,12 @@ final class Rerout
     public function webhooks(): Webhooks
     {
         return $this->webhooks;
+    }
+
+    /** Conversion tracking: record conversion events against a click. */
+    public function conversions(): Conversions
+    {
+        return $this->conversions;
     }
 
     /** The resolved API base URL (trailing slashes stripped). */

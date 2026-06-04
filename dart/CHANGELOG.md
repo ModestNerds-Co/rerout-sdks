@@ -3,6 +3,25 @@
 All notable changes to the `rerout` Dart package are documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 - 2026-06-04
+
+### Added
+
+- Smart Links support on `ShortLink`: `passwordProtected`, `maxClicks`,
+  `clickCount`, `trackConversions`, `routingRules` (`RoutingRule`), and
+  `abVariants` (`AbVariant`). Parsed leniently (sensible defaults when absent).
+- `CreateLinkRequest` gains `password`, `maxClicks`, `trackConversions`,
+  `routingRules`, and `abVariants` (`AbVariantInput`). `UpdateLinkRequest` gains
+  the same fields, with `clearPassword` / `clearMaxClicks` flags to send
+  explicit nulls, and `routingRules` / `abVariants` performing a full replace.
+- `conversions` namespace — `conversions.record(...)` posts to
+  `/v1/conversions` and returns a `RecordedConversion` (`recorded`,
+  `duplicate`).
+- `Links.createBatch(...)` posts to `/v1/links/batch` and returns a
+  `BatchCreateLinksResult` (`created`, `total`, `results`) for partial-success
+  bulk creation.
+- New webhook event type `conversion.recorded` is delivered by the server.
+
 ## 0.3.0 - 2026-06-03
 
 ### Added

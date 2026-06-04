@@ -53,6 +53,40 @@ internal static class TestHelpers
         }
         """;
 
+    /// <summary>A <see cref="Link"/> JSON payload carrying the Smart Links fields.</summary>
+    public const string SampleSmartLinkJson = """
+        {
+          "code": "vip",
+          "short_url": "https://go.brand.com/vip",
+          "domain_hostname": "go.brand.com",
+          "target_url": "https://example.com/default",
+          "project_id": "proj_123",
+          "expires_at": null,
+          "is_active": true,
+          "seo_title": null,
+          "seo_description": null,
+          "seo_image_url": null,
+          "seo_canonical_url": null,
+          "seo_noindex": false,
+          "seo_updated_at": null,
+          "created_at": 1716200000,
+          "updated_at": 1716200000,
+          "tags": [],
+          "password_protected": true,
+          "max_clicks": 1000,
+          "click_count": 42,
+          "track_conversions": true,
+          "routing_rules": [
+            { "condition_type": "country", "condition_op": "is", "condition_value": "ZA", "target_url": "https://example.com/za" },
+            { "condition_type": "device", "condition_op": "in", "condition_value": "mobile,tablet", "target_url": "https://example.com/m" }
+          ],
+          "ab_variants": [
+            { "id": 1, "target_url": "https://example.com/a", "weight": 60 },
+            { "id": 2, "target_url": "https://example.com/b", "weight": 40 }
+          ]
+        }
+        """;
+
     /// <summary>Build a client whose transport is the supplied stub handler.</summary>
     public static ReroutClient ClientWith(
         StubHttpMessageHandler handler,

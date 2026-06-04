@@ -1,10 +1,12 @@
 //! `links` namespace — create, list, get, update, delete, stats.
 
+use serde::Serialize;
+
 use crate::client::{HttpMethod, Rerout};
 use crate::error::{ReroutError, Result};
 use crate::models::{
-    CreateLinkInput, DeleteLinkResult, Link, LinkStats, ListLinksParams, ListLinksResult,
-    UpdateLinkInput,
+    BatchCreateLinksResult, BatchLinkInput, CreateLinkInput, DeleteLinkResult, Link, LinkStats,
+    ListLinksParams, ListLinksResult, UpdateLinkInput,
 };
 
 /// Link operations namespace. Reached via [`Rerout::links`].
@@ -24,6 +26,37 @@ impl<'a> Links<'a> {
     pub async fn create(&self, input: &CreateLinkInput) -> Result<Link> {
         self.client
             .request_json::<Link, _>(HttpMethod::Post, "/v1/links", None, Some(input))
+            .await
+    }
+
+    /// Create multiple links in a single request.
+    ///
+    /// `POST /v1/links/batch` with `{ "links": [...] }` as the JSON body. The
+    /// returned [`BatchCreateLinksResult`] reports the per-item outcome: each
+    /// result carries its input `index`, an `ok` flag, and either the new
+    /// `code` (on success) or an `error` string (on failure). A partial
+    /// success is possible — `created` may be less than `total`.
+    ///
+    /// Returns a `bad_request` configuration error without hitting the network
+    /// when `links` is empty.
+    pub async fn create_batch(&self, links: &[BatchLinkInput]) -> Result<BatchCreateLinksResult> {
+        if links.is_empty() {
+            return Err(ReroutError::Config {
+                code: "bad_request".to_string(),
+                message: "create_batch requires at least one link.".to_string(),
+            });
+        }
+        #[derive(Serialize)]
+        struct Body<'a> {
+            links: &'a [BatchLinkInput],
+        }
+        self.client
+            .request_json::<BatchCreateLinksResult, _>(
+                HttpMethod::Post,
+                "/v1/links/batch",
+                None,
+                Some(&Body { links }),
+            )
             .await
     }
 

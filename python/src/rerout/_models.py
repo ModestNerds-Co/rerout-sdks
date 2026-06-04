@@ -51,6 +51,77 @@ Maybe: TypeAlias = "_T | _UnsetType"
 
 EccLevel = Literal["L", "M", "Q", "H"]
 
+ConditionType = Literal["country", "device"]
+"""The visitor attribute a Smart Link routing rule matches against."""
+
+ConditionOp = Literal["is", "is_not", "in"]
+"""How a routing rule compares the visitor attribute to its value."""
+
+
+@dataclass(frozen=True, slots=True)
+class RoutingRule:
+    """A Smart Link routing rule: send matching visitors to ``target_url``.
+
+    ``condition_type`` is the visitor attribute to match (``country`` or
+    ``device``); ``condition_op`` is the comparison (``is`` / ``is_not`` /
+    ``in``); ``condition_value`` is the value to compare against (e.g. ``"US"``
+    or ``"US,CA,GB"`` for ``in``).
+    """
+
+    condition_type: str
+    condition_op: str
+    condition_value: str
+    target_url: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> RoutingRule:
+        """Build a ``RoutingRule`` from the raw JSON dict the API returns."""
+        return cls(
+            condition_type=str(data["condition_type"]),
+            condition_op=str(data["condition_op"]),
+            condition_value=str(data["condition_value"]),
+            target_url=str(data["target_url"]),
+        )
+
+    def to_payload(self) -> dict[str, Any]:
+        """Render as the JSON dict the API expects on create/update."""
+        return {
+            "condition_type": self.condition_type,
+            "condition_op": self.condition_op,
+            "condition_value": self.condition_value,
+            "target_url": self.target_url,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class AbVariant:
+    """One A/B-test variant attached to a Smart Link.
+
+    ``id`` is assigned server-side and is read-only — it is absent from the
+    create/update payload. ``weight`` controls the relative traffic share and
+    defaults to ``1`` server-side.
+    """
+
+    target_url: str
+    weight: int = 1
+    id: int | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> AbVariant:
+        """Build an ``AbVariant`` from the raw JSON dict the API returns."""
+        return cls(
+            target_url=str(data["target_url"]),
+            weight=int(data.get("weight", 1)),
+            id=_opt_int(data.get("id")),
+        )
+
+    def to_payload(self) -> dict[str, Any]:
+        """Render as the JSON dict the API expects on create/update.
+
+        The server-assigned ``id`` is never sent.
+        """
+        return {"target_url": self.target_url, "weight": self.weight}
+
 
 @dataclass(frozen=True, slots=True)
 class Tag:
@@ -86,6 +157,10 @@ class Link:
     seo_noindex: bool
     created_at: int
     updated_at: int
+    password_protected: bool = False
+    click_count: int = 0
+    track_conversions: bool = False
+    max_clicks: int | None = None
     domain_hostname: str | None = None
     expires_at: int | None = None
     seo_title: str | None = None
@@ -94,6 +169,8 @@ class Link:
     seo_canonical_url: str | None = None
     seo_updated_at: int | None = None
     tags: tuple[Tag, ...] = ()
+    routing_rules: tuple[RoutingRule, ...] = ()
+    ab_variants: tuple[AbVariant, ...] = ()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Link:
@@ -107,6 +184,10 @@ class Link:
             seo_noindex=bool(data.get("seo_noindex", True)),
             created_at=int(data["created_at"]),
             updated_at=int(data["updated_at"]),
+            password_protected=bool(data.get("password_protected", False)),
+            click_count=int(data.get("click_count", 0)),
+            track_conversions=bool(data.get("track_conversions", False)),
+            max_clicks=_opt_int(data.get("max_clicks")),
             domain_hostname=_opt_str(data.get("domain_hostname")),
             expires_at=_opt_int(data.get("expires_at")),
             seo_title=_opt_str(data.get("seo_title")),
@@ -115,6 +196,10 @@ class Link:
             seo_canonical_url=_opt_str(data.get("seo_canonical_url")),
             seo_updated_at=_opt_int(data.get("seo_updated_at")),
             tags=tuple(Tag.from_dict(t) for t in data.get("tags", []) or []),
+            routing_rules=tuple(
+                RoutingRule.from_dict(r) for r in data.get("routing_rules", []) or []
+            ),
+            ab_variants=tuple(AbVariant.from_dict(v) for v in data.get("ab_variants", []) or []),
         )
 
 
@@ -184,19 +269,11 @@ class ProjectStats:
             total_clicks=int(data["total_clicks"]),
             qr_scans=int(data["qr_scans"]),
             daily=tuple(DailyClicksPoint.from_dict(d) for d in data.get("daily", []) or []),
-            countries=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("countries", []) or []
-            ),
-            referrers=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("referrers", []) or []
-            ),
+            countries=tuple(StatsBreakdown.from_dict(d) for d in data.get("countries", []) or []),
+            referrers=tuple(StatsBreakdown.from_dict(d) for d in data.get("referrers", []) or []),
             devices=tuple(StatsBreakdown.from_dict(d) for d in data.get("devices", []) or []),
-            browsers=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("browsers", []) or []
-            ),
-            top_codes=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("top_codes", []) or []
-            ),
+            browsers=tuple(StatsBreakdown.from_dict(d) for d in data.get("browsers", []) or []),
+            top_codes=tuple(StatsBreakdown.from_dict(d) for d in data.get("top_codes", []) or []),
         )
 
 
@@ -218,12 +295,8 @@ class LinkStats:
             days=int(data["days"]),
             total_clicks=int(data["total_clicks"]),
             qr_scans=int(data["qr_scans"]),
-            countries=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("countries", []) or []
-            ),
-            referrers=tuple(
-                StatsBreakdown.from_dict(d) for d in data.get("referrers", []) or []
-            ),
+            countries=tuple(StatsBreakdown.from_dict(d) for d in data.get("countries", []) or []),
+            referrers=tuple(StatsBreakdown.from_dict(d) for d in data.get("referrers", []) or []),
         )
 
 
@@ -241,6 +314,67 @@ class ProjectInfo:
             id=str(data["id"]),
             name=str(data["name"]),
             slug=str(data["slug"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class RecordedConversion:
+    """Result of recording a conversion via ``POST /v1/conversions``.
+
+    ``recorded`` is ``True`` when the conversion was stored. ``duplicate`` is
+    ``True`` when an identical conversion for the same click had already been
+    recorded (the call is idempotent).
+    """
+
+    recorded: bool
+    duplicate: bool
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> RecordedConversion:
+        return cls(
+            recorded=bool(data.get("recorded", False)),
+            duplicate=bool(data.get("duplicate", False)),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class BatchLinkResult:
+    """Outcome of one link in a ``links.create_batch`` call.
+
+    ``index`` is the position of the input in the request array. ``ok`` is
+    ``True`` on success — then ``code`` is populated; on failure ``ok`` is
+    ``False`` and ``error`` carries the reason.
+    """
+
+    index: int
+    ok: bool
+    code: str | None = None
+    error: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> BatchLinkResult:
+        return cls(
+            index=int(data["index"]),
+            ok=bool(data["ok"]),
+            code=_opt_str(data.get("code")),
+            error=_opt_str(data.get("error")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class BatchCreateLinksResult:
+    """Aggregate result of ``links.create_batch`` (``POST /v1/links/batch``)."""
+
+    created: int
+    total: int
+    results: tuple[BatchLinkResult, ...]
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> BatchCreateLinksResult:
+        return cls(
+            created=int(data.get("created", 0)),
+            total=int(data.get("total", 0)),
+            results=tuple(BatchLinkResult.from_dict(r) for r in data.get("results", []) or []),
         )
 
 
@@ -316,9 +450,7 @@ class ListWebhooksResult:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ListWebhooksResult:
         return cls(
-            endpoints=tuple(
-                Webhook.from_dict(item) for item in data.get("endpoints", []) or []
-            ),
+            endpoints=tuple(Webhook.from_dict(item) for item in data.get("endpoints", []) or []),
             event_types=tuple(str(e) for e in data.get("event_types", []) or []),
         )
 
@@ -406,6 +538,11 @@ class CreateLinkInput:
     seo_image_url: str | None = None
     seo_canonical_url: str | None = None
     seo_noindex: bool | None = None
+    password: str | None = None
+    max_clicks: int | None = None
+    track_conversions: bool | None = None
+    routing_rules: tuple[RoutingRule, ...] | list[RoutingRule] | None = None
+    ab_variants: tuple[AbVariant, ...] | list[AbVariant] | None = None
 
     def to_payload(self) -> dict[str, Any]:
         """Render as the JSON dict the API expects.
@@ -413,7 +550,9 @@ class CreateLinkInput:
         ``None`` SEO fields are sent through verbatim (they explicitly clear
         the corresponding field server-side). Unset fields — i.e. those
         kept at the dataclass default of ``None`` for ``domain_hostname``,
-        ``code``, ``expires_at`` — are omitted from the payload.
+        ``code``, ``expires_at`` — are omitted from the payload. The Smart
+        Link fields (``password``, ``max_clicks``, ``track_conversions``,
+        ``routing_rules``, ``ab_variants``) are likewise omitted unless set.
         """
         payload: dict[str, Any] = {"target_url": self.target_url}
         if self.domain_hostname is not None:
@@ -435,6 +574,17 @@ class CreateLinkInput:
             payload["seo_canonical_url"] = self.seo_canonical_url
         if self.seo_noindex is not None:
             payload["seo_noindex"] = self.seo_noindex
+        # Smart Link fields: include only when explicitly set.
+        if self.password is not None:
+            payload["password"] = self.password
+        if self.max_clicks is not None:
+            payload["max_clicks"] = self.max_clicks
+        if self.track_conversions is not None:
+            payload["track_conversions"] = self.track_conversions
+        if self.routing_rules is not None:
+            payload["routing_rules"] = [r.to_payload() for r in self.routing_rules]
+        if self.ab_variants is not None:
+            payload["ab_variants"] = [v.to_payload() for v in self.ab_variants]
         return payload
 
 
@@ -459,12 +609,19 @@ class UpdateLinkInput:
     seo_image_url: Maybe[str | None] = field(default=UNSET)
     seo_canonical_url: Maybe[str | None] = field(default=UNSET)
     seo_noindex: Maybe[bool] = field(default=UNSET)
+    password: Maybe[str | None] = field(default=UNSET)
+    max_clicks: Maybe[int | None] = field(default=UNSET)
+    track_conversions: Maybe[bool] = field(default=UNSET)
+    routing_rules: Maybe[tuple[RoutingRule, ...] | list[RoutingRule]] = field(default=UNSET)
+    ab_variants: Maybe[tuple[AbVariant, ...] | list[AbVariant]] = field(default=UNSET)
 
     def to_payload(self) -> dict[str, Any]:
         """Render as the JSON dict the API expects.
 
         Fields that are :data:`UNSET` are omitted. Fields set to ``None`` are
-        included as JSON ``null`` so the server clears them.
+        included as JSON ``null`` so the server clears them (``password`` and
+        ``max_clicks`` accept ``null``). ``routing_rules`` and ``ab_variants``
+        are a full replacement of the link's Smart Link config.
         """
         payload: dict[str, Any] = {}
         if not isinstance(self.target_url, _UnsetType):
@@ -483,6 +640,16 @@ class UpdateLinkInput:
             payload["seo_canonical_url"] = self.seo_canonical_url
         if not isinstance(self.seo_noindex, _UnsetType):
             payload["seo_noindex"] = self.seo_noindex
+        if not isinstance(self.password, _UnsetType):
+            payload["password"] = self.password
+        if not isinstance(self.max_clicks, _UnsetType):
+            payload["max_clicks"] = self.max_clicks
+        if not isinstance(self.track_conversions, _UnsetType):
+            payload["track_conversions"] = self.track_conversions
+        if not isinstance(self.routing_rules, _UnsetType):
+            payload["routing_rules"] = [r.to_payload() for r in self.routing_rules]
+        if not isinstance(self.ab_variants, _UnsetType):
+            payload["ab_variants"] = [v.to_payload() for v in self.ab_variants]
         return payload
 
     @property

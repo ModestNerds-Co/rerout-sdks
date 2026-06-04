@@ -37,11 +37,18 @@ module Rerout
     FIELDS = %i[
       target_url expires_at is_active seo_title seo_description
       seo_image_url seo_canonical_url seo_noindex
+      password max_clicks track_conversions routing_rules ab_variants
     ].freeze
+
+    # Smart Link fields that are a full replacement (an Array of value objects
+    # or Hashes) rather than a scalar — serialized element-by-element.
+    LIST_FIELDS = %i[routing_rules ab_variants].freeze
 
     def initialize(target_url: OMIT, expires_at: OMIT, is_active: OMIT,
                    seo_title: OMIT, seo_description: OMIT, seo_image_url: OMIT,
-                   seo_canonical_url: OMIT, seo_noindex: OMIT)
+                   seo_canonical_url: OMIT, seo_noindex: OMIT,
+                   password: OMIT, max_clicks: OMIT, track_conversions: OMIT,
+                   routing_rules: OMIT, ab_variants: OMIT)
       @values = {
         target_url: target_url,
         expires_at: expires_at,
@@ -50,20 +57,26 @@ module Rerout
         seo_description: seo_description,
         seo_image_url: seo_image_url,
         seo_canonical_url: seo_canonical_url,
-        seo_noindex: seo_noindex
+        seo_noindex: seo_noindex,
+        password: password,
+        max_clicks: max_clicks,
+        track_conversions: track_conversions,
+        routing_rules: routing_rules,
+        ab_variants: ab_variants
       }
       freeze
     end
 
     # Serialize for the wire. Unset fields are omitted; `Rerout::CLEAR`
-    # becomes `null`.
+    # becomes `null`. `routing_rules` / `ab_variants` are a full replacement
+    # and serialize their elements (value objects or Hashes).
     def to_h
       out = {}
       FIELDS.each do |field|
         v = @values[field]
         next if v.equal?(OMIT)
 
-        out[field.to_s] = v.equal?(CLEAR) ? nil : v
+        out[field.to_s] = serialize_field(field, v)
       end
       out
     end
@@ -76,6 +89,18 @@ module Rerout
     # @return [Object] the raw value (sentinel or actual) for a field.
     def value_for(field)
       @values.fetch(field)
+    end
+
+    private
+
+    def serialize_field(field, value)
+      return nil if value.equal?(CLEAR)
+
+      case field
+      when :routing_rules then value.map { |r| InputSerialization.rule_hash(r) }
+      when :ab_variants then value.map { |v| InputSerialization.variant_hash(v) }
+      else value
+      end
     end
   end
 end

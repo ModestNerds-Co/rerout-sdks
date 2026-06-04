@@ -4,6 +4,23 @@ All notable changes to `@rerout/sdk` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Links support on `Link`: `password_protected`, `max_clicks`,
+  `click_count`, `track_conversions`, `routing_rules` (`RoutingRule`), and
+  `ab_variants` (`AbVariant`).
+- `CreateLinkInput` gains `password`, `max_clicks`, `track_conversions`,
+  `routing_rules`, and `ab_variants`. `UpdateLinkInput` gains the same fields,
+  with `password` / `max_clicks` accepting `null` to clear and
+  `routing_rules` / `ab_variants` performing a full replace.
+- `conversions` namespace — `conversions.record(...)` posts to
+  `/v1/conversions` and returns `{ recorded, duplicate }`.
+- `links.createBatch(...)` posts to `/v1/links/batch` and returns
+  `{ created, total, results }` for partial-success bulk creation.
+- New webhook event type `conversion.recorded` is delivered by the server.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added

@@ -27,6 +27,57 @@ public data class Tag(
 )
 
 /**
+ * A geo/device routing rule (Smart Links).
+ *
+ * When the condition matches the incoming request, the redirect resolves to
+ * [targetUrl] instead of the link's default destination. Field names mirror the
+ * server-side shape so JSON is parsed without transformation.
+ *
+ * [conditionType] is `country` or `device`; [conditionOp] is `is`, `is_not`, or
+ * `in`. These are sent verbatim and not validated client-side.
+ */
+@Serializable
+public data class RoutingRule(
+    /** What to match against — `country` or `device`. */
+    @SerialName("condition_type") val conditionType: String,
+    /** Comparison operator — `is`, `is_not`, or `in`. */
+    @SerialName("condition_op") val conditionOp: String,
+    /** Value(s) to compare against (e.g. `ZA`, `US,GB`, `mobile`). */
+    @SerialName("condition_value") val conditionValue: String,
+    /** Destination when the rule matches. */
+    @SerialName("target_url") val targetUrl: String,
+)
+
+/**
+ * A weighted A/B destination (Smart Links), as returned by the API.
+ *
+ * Field names mirror the server-side shape so JSON is parsed without
+ * transformation. To supply variants on `create`/`update`, use [AbVariantInput].
+ */
+@Serializable
+public data class AbVariant(
+    /** Stable variant id assigned by the server. */
+    val id: Long,
+    /** Destination for this variant. */
+    @SerialName("target_url") val targetUrl: String,
+    /** Relative weight in the split. */
+    val weight: Int,
+)
+
+/**
+ * A weighted A/B destination as supplied on `create`/`update`.
+ *
+ * [weight] is optional and defaults server-side when omitted.
+ */
+@Serializable
+public data class AbVariantInput(
+    /** Destination for this variant. */
+    @SerialName("target_url") val targetUrl: String,
+    /** Relative weight in the split. Defaults server-side when omitted. */
+    val weight: Int? = null,
+)
+
+/**
  * A short link as returned by the Rerout API.
  *
  * Field names mirror the server-side `LinkResponse` shape so JSON is parsed
@@ -70,6 +121,18 @@ public data class Link(
      * payloads without a `tags` field still parse.
      */
     val tags: List<Tag> = emptyList(),
+    /** Smart Links — whether a password is required to follow this link. */
+    @SerialName("password_protected") val passwordProtected: Boolean = false,
+    /** Smart Links — click cap, or null when uncapped. */
+    @SerialName("max_clicks") val maxClicks: Long? = null,
+    /** Smart Links — total clicks recorded against this link. */
+    @SerialName("click_count") val clickCount: Long = 0,
+    /** Smart Links — whether conversion tracking is enabled. */
+    @SerialName("track_conversions") val trackConversions: Boolean = false,
+    /** Smart Links — ordered geo/device routing rules. */
+    @SerialName("routing_rules") val routingRules: List<RoutingRule> = emptyList(),
+    /** Smart Links — weighted A/B destinations. */
+    @SerialName("ab_variants") val abVariants: List<AbVariant> = emptyList(),
 )
 
 /**
@@ -98,6 +161,16 @@ public data class CreateLinkInput(
     @SerialName("seo_canonical_url") val seoCanonicalUrl: String? = null,
     /** Whether the preview page should be marked noindex. */
     @SerialName("seo_noindex") val seoNoindex: Boolean? = null,
+    /** Smart Links — plaintext password to gate the link. Hashed server-side. */
+    val password: String? = null,
+    /** Smart Links — cap the link to this many clicks. */
+    @SerialName("max_clicks") val maxClicks: Long? = null,
+    /** Smart Links — mint a conversion click id on redirect. */
+    @SerialName("track_conversions") val trackConversions: Boolean? = null,
+    /** Smart Links — ordered geo/device routing rules (full set). */
+    @SerialName("routing_rules") val routingRules: List<RoutingRule>? = null,
+    /** Smart Links — weighted A/B destinations (full set). */
+    @SerialName("ab_variants") val abVariants: List<AbVariantInput>? = null,
 )
 
 /**
@@ -136,6 +209,20 @@ public class UpdateLinkInput private constructor(
     public val clearSeoCanonicalUrl: Boolean = false,
     /** Toggle whether the preview page is noindex. */
     public val seoNoindex: Boolean? = null,
+    /** Smart Links — new password, or `null` to leave unchanged. Use [clearPassword] to remove. */
+    public val password: String? = null,
+    /** When true, sends `password: null` to remove an existing password. */
+    public val clearPassword: Boolean = false,
+    /** Smart Links — new click cap. Use [clearMaxClicks] to uncap. */
+    public val maxClicks: Long? = null,
+    /** When true, sends `max_clicks: null` to remove an existing click cap. */
+    public val clearMaxClicks: Boolean = false,
+    /** Smart Links — toggle conversion tracking. */
+    public val trackConversions: Boolean? = null,
+    /** Smart Links — full-replace the routing rules. An empty list clears them. */
+    public val routingRules: List<RoutingRule>? = null,
+    /** Smart Links — full-replace the A/B variants. An empty list clears them. */
+    public val abVariants: List<AbVariantInput>? = null,
 ) {
     /**
      * Renders this patch into the JSON map the API expects. Fields are only
@@ -160,6 +247,11 @@ public class UpdateLinkInput private constructor(
             map["seo_canonical_url"] = seoCanonicalUrl
         }
         if (seoNoindex != null) map["seo_noindex"] = seoNoindex
+        if (clearPassword) map["password"] = null else if (password != null) map["password"] = password
+        if (clearMaxClicks) map["max_clicks"] = null else if (maxClicks != null) map["max_clicks"] = maxClicks
+        if (trackConversions != null) map["track_conversions"] = trackConversions
+        if (routingRules != null) map["routing_rules"] = routingRules
+        if (abVariants != null) map["ab_variants"] = abVariants
         return map
     }
 
@@ -181,6 +273,13 @@ public class UpdateLinkInput private constructor(
         private var seoCanonicalUrl: String? = null
         private var clearSeoCanonicalUrl: Boolean = false
         private var seoNoindex: Boolean? = null
+        private var password: String? = null
+        private var clearPassword: Boolean = false
+        private var maxClicks: Long? = null
+        private var clearMaxClicks: Boolean = false
+        private var trackConversions: Boolean? = null
+        private var routingRules: List<RoutingRule>? = null
+        private var abVariants: List<AbVariantInput>? = null
 
         /** Set a new destination URL. */
         public fun targetUrl(value: String): Builder = apply { targetUrl = value }
@@ -221,6 +320,27 @@ public class UpdateLinkInput private constructor(
         /** Toggle whether the preview page is noindex. */
         public fun seoNoindex(value: Boolean): Builder = apply { seoNoindex = value }
 
+        /** Smart Links — set a new password. */
+        public fun password(value: String): Builder = apply { password = value }
+
+        /** Send `password: null` to remove an existing password. */
+        public fun clearPassword(): Builder = apply { clearPassword = true }
+
+        /** Smart Links — set a new click cap. */
+        public fun maxClicks(value: Long): Builder = apply { maxClicks = value }
+
+        /** Send `max_clicks: null` to uncap an existing click limit. */
+        public fun clearMaxClicks(): Builder = apply { clearMaxClicks = true }
+
+        /** Smart Links — toggle conversion tracking. */
+        public fun trackConversions(value: Boolean): Builder = apply { trackConversions = value }
+
+        /** Smart Links — full-replace the routing rules. An empty list clears them. */
+        public fun routingRules(value: List<RoutingRule>): Builder = apply { routingRules = value }
+
+        /** Smart Links — full-replace the A/B variants. An empty list clears them. */
+        public fun abVariants(value: List<AbVariantInput>): Builder = apply { abVariants = value }
+
         /** Build the immutable [UpdateLinkInput]. */
         public fun build(): UpdateLinkInput = UpdateLinkInput(
             targetUrl = targetUrl,
@@ -236,6 +356,13 @@ public class UpdateLinkInput private constructor(
             seoCanonicalUrl = seoCanonicalUrl,
             clearSeoCanonicalUrl = clearSeoCanonicalUrl,
             seoNoindex = seoNoindex,
+            password = password,
+            clearPassword = clearPassword,
+            maxClicks = maxClicks,
+            clearMaxClicks = clearMaxClicks,
+            trackConversions = trackConversions,
+            routingRules = routingRules,
+            abVariants = abVariants,
         )
     }
 
@@ -410,6 +537,75 @@ public data class ListWebhooksResult(
     val endpoints: List<Webhook> = emptyList(),
     /** Every event type the server can deliver. */
     @SerialName("event_types") val eventTypes: List<String> = emptyList(),
+)
+
+/**
+ * Request body for recording a conversion against a prior click.
+ *
+ * Idempotent per `(clickId, eventName)`. Optional fields are omitted from the
+ * JSON when left `null`.
+ */
+@Serializable
+public data class RecordConversionInput(
+    /** The click id (`rrid`) minted on the tracked redirect. */
+    @SerialName("click_id") val clickId: String,
+    /** Conversion event label (e.g. `purchase`, `signup`). */
+    @SerialName("event_name") val eventName: String,
+    /** Optional monetary value in minor units (cents). */
+    @SerialName("value_cents") val valueCents: Long? = null,
+    /** Optional ISO 4217 currency code (e.g. `USD`). */
+    val currency: String? = null,
+)
+
+/** Result of recording a conversion. */
+@Serializable
+public data class RecordedConversion(
+    /** Whether the conversion is now recorded. */
+    val recorded: Boolean = false,
+    /** Whether this `(click_id, event_name)` was already recorded (idempotent). */
+    val duplicate: Boolean = false,
+)
+
+/**
+ * A single link to create in a batch.
+ *
+ * Optional fields are omitted from the JSON when left `null` so server-side
+ * defaults apply.
+ */
+@Serializable
+public data class BatchLinkInput(
+    /** Absolute `https://` destination URL. */
+    @SerialName("target_url") val targetUrl: String,
+    /** Custom path. Only valid with a verified [domainHostname]. */
+    val code: String? = null,
+    /** Unix seconds — expiration. Omit for a permanent link. */
+    @SerialName("expires_at") val expiresAt: Long? = null,
+    /** Verified custom domain to host this link on. */
+    @SerialName("domain_hostname") val domainHostname: String? = null,
+)
+
+/** Per-item outcome of a batch create. */
+@Serializable
+public data class BatchLinkResult(
+    /** Index of the input item this result corresponds to. */
+    val index: Int = 0,
+    /** Whether the item was created. */
+    val ok: Boolean = false,
+    /** Allocated code, when [ok]. */
+    val code: String? = null,
+    /** Failure reason, when not [ok]. */
+    val error: String? = null,
+)
+
+/** Result of a batch link create (partial-success). */
+@Serializable
+public data class BatchCreateLinksResult(
+    /** Number of links successfully created. */
+    val created: Int = 0,
+    /** Total number of items in the batch. */
+    val total: Int = 0,
+    /** Per-item outcomes, in input order. */
+    val results: List<BatchLinkResult> = emptyList(),
 )
 
 /**

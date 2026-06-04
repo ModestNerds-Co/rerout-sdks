@@ -111,6 +111,71 @@ rerout.links.update('q4', Rerout::UpdateLinkInput.new(target_url: 'https://new.e
 An `UpdateLinkInput` with no fields set raises `Rerout::Error` (code
 `empty_update`) client-side without hitting the API.
 
+## Smart Links
+
+Links carry Smart Link configuration: `password_protected`, `max_clicks`,
+`click_count`, `track_conversions`, plus `routing_rules` (array of
+`Rerout::Models::RoutingRule`) and `ab_variants` (array of
+`Rerout::Models::AbVariant`).
+
+```ruby
+rerout.links.create(
+  Rerout::CreateLinkInput.new(
+    target_url: 'https://example.com',
+    password: 'hunter2',
+    max_clicks: 500,
+    track_conversions: true,
+    routing_rules: [
+      Rerout::Models::RoutingRule.new(
+        condition_type: 'country', # "country" | "device"
+        condition_op: 'in',        # "is" | "is_not" | "in"
+        condition_value: 'US,CA',
+        target_url: 'https://example.com/na'
+      )
+    ],
+    ab_variants: [
+      Rerout::Models::AbVariant.new(target_url: 'https://example.com/a', weight: 70),
+      Rerout::Models::AbVariant.new(target_url: 'https://example.com/b', weight: 30)
+    ]
+  )
+)
+
+# On update, password/max_clicks accept Rerout::CLEAR to null them;
+# routing_rules and ab_variants fully replace the existing config.
+rerout.links.update('q4', Rerout::UpdateLinkInput.new(password: Rerout::CLEAR, max_clicks: Rerout::CLEAR))
+rerout.links.update('q4', Rerout::UpdateLinkInput.new(routing_rules: [], ab_variants: []))
+```
+
+Routing rules and A/B variants also accept plain Hashes.
+
+## Batch link creation
+
+```ruby
+result = rerout.links.create_batch(
+  [
+    Rerout::CreateLinkInput.new(target_url: 'https://example.com/1'),
+    Rerout::CreateLinkInput.new(target_url: 'https://example.com/2', code: 'promo')
+  ]
+)
+result.created # => 2
+result.total   # => 2
+result.results.each { |r| puts [r.index, r.ok, r.code || r.error].inspect }
+```
+
+The batch endpoint accepts `target_url`, `code`, `expires_at`, and
+`domain_hostname` per link; other fields are ignored.
+
+## Conversions
+
+```ruby
+result = rerout.conversions.record('clk_123', 'purchase', value_cents: 4999, currency: 'USD')
+result.recorded  # => true
+result.duplicate # => false
+```
+
+`value_cents` and `currency` are optional. The call is idempotent — a repeat
+for the same click + event returns `duplicate: true`.
+
 ## Project
 
 ```ruby

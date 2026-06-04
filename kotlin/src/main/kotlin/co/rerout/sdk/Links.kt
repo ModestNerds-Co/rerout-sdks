@@ -10,10 +10,12 @@ package co.rerout.sdk
 import co.rerout.sdk.internal.HttpMethod
 import co.rerout.sdk.internal.HttpRequest
 import co.rerout.sdk.internal.HttpTransport
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
 
 /**
  * Link operations namespace — create, list, get, update, delete, stats.
@@ -30,6 +32,22 @@ public class Links internal constructor(
             HttpRequest(method = HttpMethod.POST, path = path, body = body),
         )
         return transport.decode<Link>(text, path)
+    }
+
+    /**
+     * Creates many links in a single request. Returns a partial-success
+     * envelope — inspect each [BatchLinkResult.ok] for the per-item outcome.
+     */
+    public suspend fun createBatch(links: List<BatchLinkInput>): BatchCreateLinksResult {
+        val path = "/v1/links/batch"
+        val body = transport.jsonFormat.encodeToString(
+            BatchCreateLinksRequest.serializer(),
+            BatchCreateLinksRequest(links),
+        )
+        val text = transport.execute(
+            HttpRequest(method = HttpMethod.POST, path = path, body = body),
+        )
+        return transport.decode<BatchCreateLinksResult>(text, path)
     }
 
     /** Paginated list of links in the project. */
@@ -98,7 +116,9 @@ public class Links internal constructor(
         return transport.decode<LinkStats>(text, path)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun encodePatch(map: Map<String, Any?>): String {
+        val json = transport.jsonFormat
         val obj: JsonObject = buildJsonObject {
             for ((key, value) in map) {
                 when (value) {
@@ -107,10 +127,36 @@ public class Links internal constructor(
                     is Boolean -> put(key, JsonPrimitive(value))
                     is Long -> put(key, JsonPrimitive(value))
                     is Int -> put(key, JsonPrimitive(value))
+                    is List<*> -> {
+                        // Smart Links: routing_rules / ab_variants are lists of
+                        // @Serializable objects — encode them via the serializer
+                        // rather than stringifying.
+                        val first = value.firstOrNull()
+                        val element = when {
+                            value.isEmpty() || first is RoutingRule ->
+                                json.encodeToJsonElement(
+                                    ListSerializer(RoutingRule.serializer()),
+                                    value as List<RoutingRule>,
+                                )
+                            first is AbVariantInput ->
+                                json.encodeToJsonElement(
+                                    ListSerializer(AbVariantInput.serializer()),
+                                    value as List<AbVariantInput>,
+                                )
+                            else -> JsonPrimitive(value.toString())
+                        }
+                        put(key, element)
+                    }
                     else -> put(key, JsonPrimitive(value.toString()))
                 }
             }
         }
-        return transport.jsonFormat.encodeToString(JsonObject.serializer(), obj)
+        return json.encodeToString(JsonObject.serializer(), obj)
     }
 }
+
+/** Internal wrapper for the `POST /v1/links/batch` request body. */
+@kotlinx.serialization.Serializable
+internal data class BatchCreateLinksRequest(
+    val links: List<BatchLinkInput>,
+)

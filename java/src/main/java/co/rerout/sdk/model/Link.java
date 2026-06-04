@@ -66,27 +66,54 @@ public final class Link {
 
     private final List<Tag> tags;
 
+    @SerializedName("password_protected")
+    private final boolean passwordProtected;
+
+    @SerializedName("max_clicks")
+    private final Long maxClicks;
+
+    @SerializedName("click_count")
+    private final long clickCount;
+
+    @SerializedName("track_conversions")
+    private final boolean trackConversions;
+
+    @SerializedName("routing_rules")
+    private final List<RoutingRule> routingRules;
+
+    @SerializedName("ab_variants")
+    private final List<AbVariant> abVariants;
+
     /**
      * Creates a {@code Link}. Normally constructed by the SDK's JSON decoder;
      * exposed for tests and manual construction.
      *
-     * @param code            short link path code
-     * @param shortUrl        fully-qualified short URL
-     * @param domainHostname  verified custom domain, or {@code null}
-     * @param targetUrl       destination URL the redirect resolves to
-     * @param projectId       project that owns the link
-     * @param expiresAt       expiry in unix seconds, or {@code null} if permanent
-     * @param active          whether the link is currently active
-     * @param seoTitle        social preview title override, or {@code null}
-     * @param seoDescription  social preview description override, or {@code null}
-     * @param seoImageUrl     social preview image URL override, or {@code null}
-     * @param seoCanonicalUrl preview canonical URL override, or {@code null}
-     * @param seoNoindex      whether the preview HTML is marked noindex
-     * @param seoUpdatedAt    last SEO field change in unix seconds, or {@code null}
-     * @param createdAt       link creation time in unix seconds
-     * @param updatedAt       last mutation time in unix seconds
-     * @param tags            tags attached to the link; a {@code null} value is
-     *                        normalised to an empty list
+     * @param code             short link path code
+     * @param shortUrl         fully-qualified short URL
+     * @param domainHostname   verified custom domain, or {@code null}
+     * @param targetUrl        destination URL the redirect resolves to
+     * @param projectId        project that owns the link
+     * @param expiresAt        expiry in unix seconds, or {@code null} if permanent
+     * @param active           whether the link is currently active
+     * @param seoTitle         social preview title override, or {@code null}
+     * @param seoDescription   social preview description override, or {@code null}
+     * @param seoImageUrl      social preview image URL override, or {@code null}
+     * @param seoCanonicalUrl  preview canonical URL override, or {@code null}
+     * @param seoNoindex       whether the preview HTML is marked noindex
+     * @param seoUpdatedAt     last SEO field change in unix seconds, or {@code null}
+     * @param createdAt        link creation time in unix seconds
+     * @param updatedAt        last mutation time in unix seconds
+     * @param tags             tags attached to the link; a {@code null} value is
+     *                         normalised to an empty list
+     * @param passwordProtected whether the link requires a password
+     * @param maxClicks        click cap before the link stops resolving, or
+     *                         {@code null} for unlimited
+     * @param clickCount       total clicks recorded so far
+     * @param trackConversions whether conversion tracking is enabled
+     * @param routingRules     smart-routing rules; a {@code null} value is
+     *                         normalised to an empty list
+     * @param abVariants       A/B test variants; a {@code null} value is
+     *                         normalised to an empty list
      */
     public Link(
             String code,
@@ -104,7 +131,13 @@ public final class Link {
             Long seoUpdatedAt,
             long createdAt,
             long updatedAt,
-            List<Tag> tags) {
+            List<Tag> tags,
+            boolean passwordProtected,
+            Long maxClicks,
+            long clickCount,
+            boolean trackConversions,
+            List<RoutingRule> routingRules,
+            List<AbVariant> abVariants) {
         this.code = code;
         this.shortUrl = shortUrl;
         this.domainHostname = domainHostname;
@@ -121,6 +154,12 @@ public final class Link {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.tags = tags == null ? Collections.emptyList() : tags;
+        this.passwordProtected = passwordProtected;
+        this.maxClicks = maxClicks;
+        this.clickCount = clickCount;
+        this.trackConversions = trackConversions;
+        this.routingRules = routingRules == null ? Collections.emptyList() : routingRules;
+        this.abVariants = abVariants == null ? Collections.emptyList() : abVariants;
     }
 
     /** {@return the short link path code} */
@@ -210,6 +249,49 @@ public final class Link {
         return tags == null ? Collections.emptyList() : tags;
     }
 
+    /** {@return whether the link requires a password before redirecting} */
+    public boolean isPasswordProtected() {
+        return passwordProtected;
+    }
+
+    /**
+     * {@return the click cap before the link stops resolving, or {@code null}
+     * for unlimited}
+     */
+    public Long getMaxClicks() {
+        return maxClicks;
+    }
+
+    /** {@return the total clicks recorded so far} */
+    public long getClickCount() {
+        return clickCount;
+    }
+
+    /** {@return whether conversion tracking is enabled for this link} */
+    public boolean isTrackConversions() {
+        return trackConversions;
+    }
+
+    /**
+     * {@return the smart-routing rules evaluated in order; never {@code null}}
+     *
+     * <p>A missing or {@code null} {@code routing_rules} field in the response
+     * is normalised to an empty list.
+     */
+    public List<RoutingRule> getRoutingRules() {
+        return routingRules == null ? Collections.emptyList() : routingRules;
+    }
+
+    /**
+     * {@return the A/B test variants traffic is split across; never {@code null}}
+     *
+     * <p>A missing or {@code null} {@code ab_variants} field in the response is
+     * normalised to an empty list.
+     */
+    public List<AbVariant> getAbVariants() {
+        return abVariants == null ? Collections.emptyList() : abVariants;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -223,6 +305,9 @@ public final class Link {
                 && seoNoindex == other.seoNoindex
                 && createdAt == other.createdAt
                 && updatedAt == other.updatedAt
+                && passwordProtected == other.passwordProtected
+                && clickCount == other.clickCount
+                && trackConversions == other.trackConversions
                 && Objects.equals(code, other.code)
                 && Objects.equals(shortUrl, other.shortUrl)
                 && Objects.equals(domainHostname, other.domainHostname)
@@ -234,7 +319,10 @@ public final class Link {
                 && Objects.equals(seoImageUrl, other.seoImageUrl)
                 && Objects.equals(seoCanonicalUrl, other.seoCanonicalUrl)
                 && Objects.equals(seoUpdatedAt, other.seoUpdatedAt)
-                && Objects.equals(getTags(), other.getTags());
+                && Objects.equals(getTags(), other.getTags())
+                && Objects.equals(maxClicks, other.maxClicks)
+                && Objects.equals(getRoutingRules(), other.getRoutingRules())
+                && Objects.equals(getAbVariants(), other.getAbVariants());
     }
 
     @Override
@@ -242,7 +330,9 @@ public final class Link {
         return Objects.hash(
                 code, shortUrl, domainHostname, targetUrl, projectId, expiresAt,
                 active, seoTitle, seoDescription, seoImageUrl, seoCanonicalUrl,
-                seoNoindex, seoUpdatedAt, createdAt, updatedAt, getTags());
+                seoNoindex, seoUpdatedAt, createdAt, updatedAt, getTags(),
+                passwordProtected, maxClicks, clickCount, trackConversions,
+                getRoutingRules(), getAbVariants());
     }
 
     @Override

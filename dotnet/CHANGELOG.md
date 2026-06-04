@@ -4,6 +4,27 @@ All notable changes to the `Rerout` .NET package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Links support on `Link`: read-only `PasswordProtected`, `MaxClicks`,
+  `ClickCount`, `TrackConversions`, `RoutingRules` (`IReadOnlyList<RoutingRule>`),
+  and `AbVariants` (`IReadOnlyList<AbVariant>`). New `RoutingRule` and `AbVariant`
+  records; all default sensibly when the server omits them.
+- Smart Links input on `CreateLinkInput`: optional `Password`, `MaxClicks`,
+  `TrackConversions`, `RoutingRules`, and `AbVariants` (items via the new
+  `AbVariantInput`, whose `Weight` is optional).
+- Smart Links input on `UpdateLinkInput`: `Password` and `MaxClicks` as
+  `Optional<…?>` (set, or `Set(null)` to clear), `TrackConversions`, and
+  full-replace `RoutingRules` / `AbVariants`.
+- `Conversions` accessor — `RecordAsync(RecordConversionInput)` POSTs to
+  `/v1/conversions` and returns `RecordedConversion` (`Recorded`, `Duplicate`).
+- `Links.CreateBatchAsync(IReadOnlyList<BatchLinkInput>)` — POSTs to
+  `/v1/links/batch` and returns a partial-success `BatchCreateLinksResult`
+  (`Created`, `Total`, per-item `BatchLinkResult`).
+- New webhook event type `conversion.recorded` is now deliverable.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added
@@ -48,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dependencies.
 - Targets `net8.0`.
 
+[0.4.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet/v0.4.0
 [0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/dotnet-v0.1.0

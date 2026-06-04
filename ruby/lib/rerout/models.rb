@@ -35,12 +35,94 @@ module Rerout
       end
     end
 
+    # A Smart Link routing rule — send matching visitors to `target_url`.
+    # `condition_type` is `"country"` or `"device"`; `condition_op` is `"is"`,
+    # `"is_not"`, or `"in"`; `condition_value` is the value to compare against
+    # (e.g. `"US"` or `"US,CA,GB"` for `"in"`).
+    class RoutingRule
+      attr_reader :condition_type, :condition_op, :condition_value, :target_url
+
+      def initialize(condition_type:, condition_op:, condition_value:, target_url:)
+        @condition_type = condition_type
+        @condition_op = condition_op
+        @condition_value = condition_value
+        @target_url = target_url
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          condition_type: hash['condition_type'],
+          condition_op: hash['condition_op'],
+          condition_value: hash['condition_value'],
+          target_url: hash['target_url']
+        )
+      end
+
+      def to_h
+        {
+          'condition_type' => condition_type,
+          'condition_op' => condition_op,
+          'condition_value' => condition_value,
+          'target_url' => target_url
+        }
+      end
+
+      def ==(other)
+        other.is_a?(RoutingRule) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
+    # One A/B-test variant attached to a Smart Link. `id` is assigned
+    # server-side (read-only); `weight` controls the relative traffic share and
+    # defaults to `1`.
+    class AbVariant
+      attr_reader :id, :target_url, :weight
+
+      def initialize(target_url:, weight: 1, id: nil)
+        @id = id
+        @target_url = target_url
+        @weight = weight
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          id: hash['id'],
+          target_url: hash['target_url'],
+          weight: hash.fetch('weight', 1)
+        )
+      end
+
+      # Render for create/update. The server-assigned `id` is never sent.
+      def to_h
+        { 'target_url' => target_url, 'weight' => weight }
+      end
+
+      def ==(other)
+        other.is_a?(AbVariant) && other.id == id &&
+          other.target_url == target_url && other.weight == weight
+      end
+      alias eql? ==
+
+      def hash
+        [self.class, id, target_url, weight].hash
+      end
+    end
+
     # A short link.
     class Link
       ATTRS = %i[
         code short_url domain_hostname target_url project_id expires_at
         is_active seo_title seo_description seo_image_url seo_canonical_url
         seo_noindex seo_updated_at tags created_at updated_at
+        password_protected max_clicks click_count track_conversions
+        routing_rules ab_variants
       ].freeze
 
       attr_reader(*ATTRS)
@@ -48,6 +130,8 @@ module Rerout
       def initialize(**attrs)
         ATTRS.each { |k| instance_variable_set(:"@#{k}", attrs[k]) }
         @tags = (@tags || []).freeze
+        @routing_rules = (@routing_rules || []).freeze
+        @ab_variants = (@ab_variants || []).freeze
         freeze
       end
 
@@ -68,13 +152,24 @@ module Rerout
           seo_updated_at: hash['seo_updated_at'],
           tags: (hash['tags'] || []).map { |t| Tag.from_hash(t) },
           created_at: hash['created_at'],
-          updated_at: hash['updated_at']
+          updated_at: hash['updated_at'],
+          password_protected: hash.fetch('password_protected', false),
+          max_clicks: hash['max_clicks'],
+          click_count: hash.fetch('click_count', 0),
+          track_conversions: hash.fetch('track_conversions', false),
+          routing_rules: (hash['routing_rules'] || []).map { |r| RoutingRule.from_hash(r) },
+          ab_variants: (hash['ab_variants'] || []).map { |v| AbVariant.from_hash(v) }
         )
       end
 
       def to_h
         ATTRS.to_h do |k|
-          [k, k == :tags ? tags.map(&:to_h) : public_send(k)]
+          [k, case k
+              when :tags then tags.map(&:to_h)
+              when :routing_rules then routing_rules.map(&:to_h)
+              when :ab_variants then ab_variants.map(&:to_h)
+              else public_send(k)
+              end]
         end
       end
 
@@ -404,6 +499,109 @@ module Rerout
 
       def ==(other)
         other.is_a?(ListWebhooksResult) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
+    # Result of recording a conversion via `POST /v1/conversions`. `recorded`
+    # is true when stored; `duplicate` is true when an identical conversion for
+    # the same click had already been recorded (the call is idempotent).
+    class RecordedConversion
+      attr_reader :recorded, :duplicate
+
+      def initialize(recorded:, duplicate:)
+        @recorded = recorded
+        @duplicate = duplicate
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          recorded: hash.fetch('recorded', false),
+          duplicate: hash.fetch('duplicate', false)
+        )
+      end
+
+      def to_h
+        { recorded: recorded, duplicate: duplicate }
+      end
+
+      def ==(other)
+        other.is_a?(RecordedConversion) && other.recorded == recorded && other.duplicate == duplicate
+      end
+      alias eql? ==
+
+      def hash
+        [self.class, recorded, duplicate].hash
+      end
+    end
+
+    # Outcome of one link in a `links.create_batch` call. `index` is the input
+    # position; `ok` is true on success (then `code` is set), false on failure
+    # (then `error` carries the reason).
+    class BatchLinkResult
+      attr_reader :index, :ok, :code, :error
+
+      def initialize(index:, ok:, code: nil, error: nil)
+        @index = index
+        @ok = ok
+        @code = code
+        @error = error
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          index: hash['index'],
+          ok: hash['ok'],
+          code: hash['code'],
+          error: hash['error']
+        )
+      end
+
+      def to_h
+        { index: index, ok: ok, code: code, error: error }
+      end
+
+      def ==(other)
+        other.is_a?(BatchLinkResult) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
+    # Aggregate result of `links.create_batch` (`POST /v1/links/batch`).
+    class BatchCreateLinksResult
+      attr_reader :created, :total, :results
+
+      def initialize(created:, total:, results:)
+        @created = created
+        @total = total
+        @results = results.freeze
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          created: hash.fetch('created', 0),
+          total: hash.fetch('total', 0),
+          results: (hash['results'] || []).map { |r| BatchLinkResult.from_hash(r) }
+        )
+      end
+
+      def to_h
+        { created: created, total: total, results: results.map(&:to_h) }
+      end
+
+      def ==(other)
+        other.is_a?(BatchCreateLinksResult) && other.to_h == to_h
       end
       alias eql? ==
 

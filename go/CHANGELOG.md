@@ -5,6 +5,24 @@ format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Links support on `Link`: `PasswordProtected`, `MaxClicks`,
+  `ClickCount`, `TrackConversions`, `RoutingRules` (`[]RoutingRule` with
+  `{ConditionType, ConditionOp, ConditionValue, TargetURL}`), and `ABVariants`
+  (`[]ABVariant` with `{ID, TargetURL, Weight}`).
+- Smart Links inputs on `CreateLinkInput` (`Password`, `MaxClicks`,
+  `TrackConversions`, `RoutingRules`, `ABVariants`) and `UpdateLinkInput`
+  (`Password`/`ClearPassword`, `MaxClicks`/`ClearMaxClicks`, `TrackConversions`,
+  and full-replace `RoutingRules` / `ABVariants` pointer-to-slice fields).
+- New `Conversions` namespace via `Client.Conversions()` — `Record` against
+  `POST /v1/conversions`, returning `{Recorded, Duplicate}`.
+- Batch link creation via `Links().CreateBatch` — `POST /v1/links/batch`,
+  returning `{Created, Total, Results}` with per-item index/ok/code/error.
+- New webhook event type `conversion.recorded` is now deliverable.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added
@@ -51,6 +69,7 @@ and this project adheres to
 - Pointer helpers `String`, `Int`, `Int64`, `Bool` for optional struct fields.
 - Standard-library only — no third-party dependencies.
 
+[0.4.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go/v0.4.0
 [0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/go-v0.1.0

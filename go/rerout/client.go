@@ -45,10 +45,11 @@ type Client struct {
 	httpClient     *http.Client
 	defaultHeaders map[string]string
 
-	links    *Links
-	project  *ProjectNS
-	qr       *QR
-	webhooks *Webhooks
+	links       *Links
+	project     *ProjectNS
+	qr          *QR
+	webhooks    *Webhooks
+	conversions *Conversions
 }
 
 // Option configures a Client at construction time. See WithBaseURL,
@@ -141,6 +142,7 @@ func NewClient(apiKey string, opts ...Option) (*Client, error) {
 	c.project = &ProjectNS{client: c}
 	c.qr = &QR{client: c}
 	c.webhooks = &Webhooks{client: c}
+	c.conversions = &Conversions{client: c}
 	return c, nil
 }
 
@@ -155,6 +157,9 @@ func (c *Client) QR() *QR { return c.qr }
 
 // Webhooks returns the webhook-endpoint-management namespace.
 func (c *Client) Webhooks() *Webhooks { return c.webhooks }
+
+// Conversions returns the conversion-tracking namespace.
+func (c *Client) Conversions() *Conversions { return c.conversions }
 
 // BaseURL returns the resolved base URL — trailing-slash-trimmed. Exposed for
 // diagnostics and the QR URL builder.

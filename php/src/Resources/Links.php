@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Rerout\Resources;
 
 use Rerout\Exceptions\ReroutException;
+use Rerout\Models\BatchCreateLinksResult;
+use Rerout\Models\BatchLinkInput;
 use Rerout\Models\CreateLinkInput;
 use Rerout\Models\Link;
 use Rerout\Models\LinkStats;
@@ -32,6 +34,30 @@ final class Links
         );
 
         return Link::fromArray($response);
+    }
+
+    /**
+     * Create many links in one request. Each item is created independently;
+     * the result reports per-link success/failure in submission order — a
+     * failure on one item does not abort the rest.
+     *
+     * @param list<BatchLinkInput> $links The links to create.
+     */
+    public function createBatch(array $links): BatchCreateLinksResult
+    {
+        $payload = array_map(
+            static fn (BatchLinkInput $link): array => $link->toArray(),
+            array_values($links),
+        );
+
+        /** @var array<string, mixed> $response */
+        $response = $this->client->request(
+            method: 'POST',
+            path: '/v1/links/batch',
+            body: ['links' => $payload],
+        );
+
+        return BatchCreateLinksResult::fromArray($response);
     }
 
     /** Paginated list of links in the project. */

@@ -38,6 +38,29 @@ public sealed record UpdateLinkInput
     public Optional<bool> SeoNoindex { get; init; }
 
     /// <summary>
+    /// Smart Links — set a password, or <c>Set(null)</c> to clear it.
+    /// </summary>
+    public Optional<string?> Password { get; init; }
+
+    /// <summary>
+    /// Smart Links — set a click cap, or <c>Set(null)</c> to clear it.
+    /// </summary>
+    public Optional<long?> MaxClicks { get; init; }
+
+    /// <summary>Smart Links — toggle conversion tracking.</summary>
+    public Optional<bool> TrackConversions { get; init; }
+
+    /// <summary>
+    /// Smart Links — full-replace the routing rules. An empty list clears them.
+    /// </summary>
+    public Optional<IReadOnlyList<RoutingRule>> RoutingRules { get; init; }
+
+    /// <summary>
+    /// Smart Links — full-replace the A/B variants. An empty list clears them.
+    /// </summary>
+    public Optional<IReadOnlyList<AbVariantInput>> AbVariants { get; init; }
+
+    /// <summary>
     /// Materialize this input as the JSON object the API expects. Properties
     /// whose <see cref="Optional{T}"/> is <see cref="Optional{T}.Unset"/> are
     /// omitted entirely.
@@ -53,6 +76,11 @@ public sealed record UpdateLinkInput
         if (SeoImageUrl.HasValue) payload["seo_image_url"] = SeoImageUrl.Value;
         if (SeoCanonicalUrl.HasValue) payload["seo_canonical_url"] = SeoCanonicalUrl.Value;
         if (SeoNoindex.HasValue) payload["seo_noindex"] = SeoNoindex.Value;
+        if (Password.HasValue) payload["password"] = Password.Value;
+        if (MaxClicks.HasValue) payload["max_clicks"] = MaxClicks.Value;
+        if (TrackConversions.HasValue) payload["track_conversions"] = TrackConversions.Value;
+        if (RoutingRules.HasValue) payload["routing_rules"] = RoutingRules.Value;
+        if (AbVariants.HasValue) payload["ab_variants"] = AbVariants.Value;
         return payload;
     }
 
@@ -65,5 +93,10 @@ public sealed record UpdateLinkInput
         && !SeoDescription.HasValue
         && !SeoImageUrl.HasValue
         && !SeoCanonicalUrl.HasValue
-        && !SeoNoindex.HasValue;
+        && !SeoNoindex.HasValue
+        && !Password.HasValue
+        && !MaxClicks.HasValue
+        && !TrackConversions.HasValue
+        && !RoutingRules.HasValue
+        && !AbVariants.HasValue;
 }

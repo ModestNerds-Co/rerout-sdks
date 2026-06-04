@@ -8,6 +8,10 @@
 package co.rerout.sdk.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Request body for creating a short link.
@@ -52,6 +56,20 @@ public final class CreateLinkInput {
     @SerializedName("seo_noindex")
     private final Boolean seoNoindex;
 
+    private final String password;
+
+    @SerializedName("max_clicks")
+    private final Integer maxClicks;
+
+    @SerializedName("track_conversions")
+    private final Boolean trackConversions;
+
+    @SerializedName("routing_rules")
+    private final List<RoutingRule> routingRules;
+
+    @SerializedName("ab_variants")
+    private final List<AbVariantInput> abVariants;
+
     private CreateLinkInput(Builder b) {
         this.targetUrl = b.targetUrl;
         this.domainHostname = b.domainHostname;
@@ -62,6 +80,15 @@ public final class CreateLinkInput {
         this.seoImageUrl = b.seoImageUrl;
         this.seoCanonicalUrl = b.seoCanonicalUrl;
         this.seoNoindex = b.seoNoindex;
+        this.password = b.password;
+        this.maxClicks = b.maxClicks;
+        this.trackConversions = b.trackConversions;
+        this.routingRules = b.routingRules == null
+                ? null
+                : Collections.unmodifiableList(new ArrayList<>(b.routingRules));
+        this.abVariants = b.abVariants == null
+                ? null
+                : Collections.unmodifiableList(new ArrayList<>(b.abVariants));
     }
 
     /**
@@ -119,6 +146,31 @@ public final class CreateLinkInput {
         return seoNoindex;
     }
 
+    /** {@return the Smart Link password, or {@code null}} */
+    public String getPassword() {
+        return password;
+    }
+
+    /** {@return the click cap before the link stops resolving, or {@code null}} */
+    public Integer getMaxClicks() {
+        return maxClicks;
+    }
+
+    /** {@return whether conversion tracking is requested, or {@code null}} */
+    public Boolean getTrackConversions() {
+        return trackConversions;
+    }
+
+    /** {@return the smart-routing rules, or {@code null} if unset} */
+    public List<RoutingRule> getRoutingRules() {
+        return routingRules;
+    }
+
+    /** {@return the A/B test variants, or {@code null} if unset} */
+    public List<AbVariantInput> getAbVariants() {
+        return abVariants;
+    }
+
     /** Fluent builder for {@link CreateLinkInput}. */
     public static final class Builder {
         private final String targetUrl;
@@ -130,6 +182,11 @@ public final class CreateLinkInput {
         private String seoImageUrl;
         private String seoCanonicalUrl;
         private Boolean seoNoindex;
+        private String password;
+        private Integer maxClicks;
+        private Boolean trackConversions;
+        private List<RoutingRule> routingRules;
+        private List<AbVariantInput> abVariants;
 
         private Builder(String targetUrl) {
             this.targetUrl = targetUrl;
@@ -222,6 +279,100 @@ public final class CreateLinkInput {
          */
         public Builder seoNoindex(boolean value) {
             this.seoNoindex = value;
+            return this;
+        }
+
+        /**
+         * Sets the Smart Link password. Visitors must enter it before being
+         * redirected.
+         *
+         * @param value the password
+         * @return this builder
+         */
+        public Builder password(String value) {
+            this.password = value;
+            return this;
+        }
+
+        /**
+         * Sets the click cap before the link stops resolving.
+         *
+         * @param value the maximum clicks
+         * @return this builder
+         */
+        public Builder maxClicks(int value) {
+            this.maxClicks = value;
+            return this;
+        }
+
+        /**
+         * Enables or disables conversion tracking for this link.
+         *
+         * @param value {@code true} to track conversions
+         * @return this builder
+         */
+        public Builder trackConversions(boolean value) {
+            this.trackConversions = value;
+            return this;
+        }
+
+        /**
+         * Adds one or more smart-routing rules. Calling this multiple times
+         * accumulates rules; rules are evaluated in the order added.
+         *
+         * @param rules the routing rules to add
+         * @return this builder
+         */
+        public Builder routingRules(RoutingRule... rules) {
+            if (this.routingRules == null) {
+                this.routingRules = new ArrayList<>();
+            }
+            this.routingRules.addAll(Arrays.asList(rules));
+            return this;
+        }
+
+        /**
+         * Adds the given smart-routing rules. Calling this multiple times
+         * accumulates rules; rules are evaluated in the order added.
+         *
+         * @param rules the routing rules to add
+         * @return this builder
+         */
+        public Builder routingRules(List<RoutingRule> rules) {
+            if (this.routingRules == null) {
+                this.routingRules = new ArrayList<>();
+            }
+            this.routingRules.addAll(rules);
+            return this;
+        }
+
+        /**
+         * Adds one or more A/B test variants. Calling this multiple times
+         * accumulates variants.
+         *
+         * @param variants the variants to add
+         * @return this builder
+         */
+        public Builder abVariants(AbVariantInput... variants) {
+            if (this.abVariants == null) {
+                this.abVariants = new ArrayList<>();
+            }
+            this.abVariants.addAll(Arrays.asList(variants));
+            return this;
+        }
+
+        /**
+         * Adds the given A/B test variants. Calling this multiple times
+         * accumulates variants.
+         *
+         * @param variants the variants to add
+         * @return this builder
+         */
+        public Builder abVariants(List<AbVariantInput> variants) {
+            if (this.abVariants == null) {
+                this.abVariants = new ArrayList<>();
+            }
+            this.abVariants.addAll(variants);
             return this;
         }
 

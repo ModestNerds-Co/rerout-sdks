@@ -75,6 +75,7 @@ public sealed class ReroutClient : IDisposable
         Project = new Project(_http);
         Qr = new Qr(_http);
         Webhooks = new Resources.Webhooks(_http);
+        Conversions = new Conversions(_http);
     }
 
     /// <summary>Link operations: create, list, get, update, delete, stats.</summary>
@@ -88,6 +89,9 @@ public sealed class ReroutClient : IDisposable
 
     /// <summary>Webhook endpoint management: create, list, delete.</summary>
     public Resources.Webhooks Webhooks { get; }
+
+    /// <summary>Conversion tracking: record a conversion against a prior click.</summary>
+    public Conversions Conversions { get; }
 
     /// <summary>The resolved API base URL, with trailing slashes trimmed.</summary>
     public string BaseUrl => _http.BaseUrl;

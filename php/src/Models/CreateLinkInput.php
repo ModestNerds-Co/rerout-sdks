@@ -23,6 +23,11 @@ final readonly class CreateLinkInput
      * @param string|null $seoImageUrl     Absolute `https://` social preview image URL.
      * @param string|null $seoCanonicalUrl Canonical URL for the preview HTML.
      * @param bool|null   $seoNoindex      Whether the preview page should be marked noindex.
+     * @param string|null $password        Smart Link password. Visitors must enter it before redirecting.
+     * @param int|null    $maxClicks       Click cap before the link stops resolving.
+     * @param bool|null   $trackConversions Whether to enable conversion tracking for this link.
+     * @param list<RoutingRule>|null  $routingRules Smart-routing rules evaluated in order.
+     * @param list<AbVariantInput>|null $abVariants A/B test variants to split traffic across.
      */
     public function __construct(
         public string $targetUrl,
@@ -34,6 +39,11 @@ final readonly class CreateLinkInput
         public ?string $seoImageUrl = null,
         public ?string $seoCanonicalUrl = null,
         public ?bool $seoNoindex = null,
+        public ?string $password = null,
+        public ?int $maxClicks = null,
+        public ?bool $trackConversions = null,
+        public ?array $routingRules = null,
+        public ?array $abVariants = null,
     ) {
     }
 
@@ -69,6 +79,27 @@ final readonly class CreateLinkInput
         }
         if ($this->seoNoindex !== null) {
             $out['seo_noindex'] = $this->seoNoindex;
+        }
+        if ($this->password !== null) {
+            $out['password'] = $this->password;
+        }
+        if ($this->maxClicks !== null) {
+            $out['max_clicks'] = $this->maxClicks;
+        }
+        if ($this->trackConversions !== null) {
+            $out['track_conversions'] = $this->trackConversions;
+        }
+        if ($this->routingRules !== null) {
+            $out['routing_rules'] = array_map(
+                static fn (RoutingRule $rule): array => $rule->toArray(),
+                array_values($this->routingRules),
+            );
+        }
+        if ($this->abVariants !== null) {
+            $out['ab_variants'] = array_map(
+                static fn (AbVariantInput $variant): array => $variant->toArray(),
+                array_values($this->abVariants),
+            );
         }
 
         return $out;

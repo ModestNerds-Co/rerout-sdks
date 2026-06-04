@@ -8,7 +8,15 @@
  * @see https://github.com/ModestNerds-Co/rerout-sdks
  */
 
-export { Rerout, DEFAULT_BASE_URL, Links, Project, Qr, Webhooks } from './client.js'
+export {
+  Rerout,
+  DEFAULT_BASE_URL,
+  Links,
+  Project,
+  Qr,
+  Webhooks,
+  Conversions,
+} from './client.js'
 export type { ReroutClientOptions } from './client.js'
 export { ReroutError } from './errors.js'
 export {
@@ -18,6 +26,11 @@ export {
 export type { VerifyOptions } from './webhooks.js'
 export { buildQrUrl } from './qr.js'
 export type {
+  AbVariant,
+  AbVariantInput,
+  BatchCreateLinksResult,
+  BatchLinkInput,
+  BatchLinkResult,
   CreateLinkInput,
   CreatedWebhook,
   CreateWebhookInput,
@@ -29,6 +42,11 @@ export type {
   ListWebhooksResult,
   ProjectStats,
   QrUrlOptions,
+  RecordConversionInput,
+  RecordedConversion,
+  RoutingConditionOp,
+  RoutingConditionType,
+  RoutingRule,
   StatsBreakdown,
   Tag,
   UpdateLinkInput,

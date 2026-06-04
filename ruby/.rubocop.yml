@@ -52,11 +52,34 @@ Metrics/CyclomaticComplexity:
   Max: 12
   Exclude:
     - 'lib/rerout/models.rb'
+    - 'lib/rerout/create_link_input.rb'
 
 Metrics/PerceivedComplexity:
   Max: 12
   Exclude:
     - 'lib/rerout/models.rb'
+    - 'lib/rerout/create_link_input.rb'
+
+# `ok` / `id` mirror API field names — 1:1 mappings, not smells. The rest are
+# the RuboCop defaults, re-listed because AllowedNames replaces (not extends).
+Naming/MethodParameterName:
+  AllowedNames:
+    - ok
+    - id
+    - at
+    - by
+    - db
+    - in
+    - io
+    - ip
+    - of
+    - 'on'
+    - os
+    - pp
+    - to
+    - x
+    - y
+    - z
 
 # Development dependencies are declared in the gemspec so a single
 # `bundle install` resolves everything for contributors.

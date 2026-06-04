@@ -41,6 +41,14 @@ final class UpdateLinkInput
      */
     public const string CLEAR = "\0__rerout_clear__\0";
 
+    /**
+     * @param list<RoutingRule>|string   $routingRules Full replacement of the
+     *        link's routing rules. Default {@see UpdateLinkInput::UNSET} leaves
+     *        them alone; pass a (possibly empty) list to replace them.
+     * @param list<AbVariantInput>|string $abVariants  Full replacement of the
+     *        link's A/B variants. Default {@see UpdateLinkInput::UNSET} leaves
+     *        them alone; pass a (possibly empty) list to replace them.
+     */
     public function __construct(
         public readonly string $targetUrl = self::UNSET,
         public readonly int|string|null $expiresAt = self::UNSET,
@@ -50,6 +58,11 @@ final class UpdateLinkInput
         public readonly ?string $seoImageUrl = self::UNSET,
         public readonly ?string $seoCanonicalUrl = self::UNSET,
         public readonly bool|string $seoNoindex = self::UNSET,
+        public readonly ?string $password = self::UNSET,
+        public readonly int|string|null $maxClicks = self::UNSET,
+        public readonly bool|string $trackConversions = self::UNSET,
+        public readonly array|string $routingRules = self::UNSET,
+        public readonly array|string $abVariants = self::UNSET,
     ) {
     }
 
@@ -89,6 +102,27 @@ final class UpdateLinkInput
         if ($this->seoNoindex !== self::UNSET) {
             $out['seo_noindex'] = $this->seoNoindex === self::CLEAR ? null : $this->seoNoindex;
         }
+        if ($this->password !== self::UNSET) {
+            $out['password'] = $this->password === self::CLEAR ? null : $this->password;
+        }
+        if ($this->maxClicks !== self::UNSET) {
+            $out['max_clicks'] = $this->maxClicks === self::CLEAR ? null : $this->maxClicks;
+        }
+        if ($this->trackConversions !== self::UNSET) {
+            $out['track_conversions'] = $this->trackConversions === self::CLEAR ? null : $this->trackConversions;
+        }
+        if (is_array($this->routingRules)) {
+            $out['routing_rules'] = array_map(
+                static fn (RoutingRule $rule): array => $rule->toArray(),
+                array_values($this->routingRules),
+            );
+        }
+        if (is_array($this->abVariants)) {
+            $out['ab_variants'] = array_map(
+                static fn (AbVariantInput $variant): array => $variant->toArray(),
+                array_values($this->abVariants),
+            );
+        }
 
         if ($out === []) {
             throw new ReroutException(
@@ -114,6 +148,11 @@ final class UpdateLinkInput
             && $this->seoDescription === self::UNSET
             && $this->seoImageUrl === self::UNSET
             && $this->seoCanonicalUrl === self::UNSET
-            && $this->seoNoindex === self::UNSET;
+            && $this->seoNoindex === self::UNSET
+            && $this->password === self::UNSET
+            && $this->maxClicks === self::UNSET
+            && $this->trackConversions === self::UNSET
+            && !is_array($this->routingRules)
+            && !is_array($this->abVariants);
     }
 }

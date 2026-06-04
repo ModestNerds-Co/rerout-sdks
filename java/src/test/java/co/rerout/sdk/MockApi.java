@@ -307,4 +307,50 @@ final class MockApi implements AutoCloseable {
             + "\"last_success_at\":null,"
             + "\"last_failure_at\":null"
             + "}";
+
+    /**
+     * A sample Smart Link JSON body carrying password/max-click/conversion
+     * fields, routing rules, and A/B variants.
+     */
+    static final String SAMPLE_SMART_LINK_JSON =
+            "{"
+            + "\"code\":\"q4\","
+            + "\"short_url\":\"https://go.brand.com/q4\","
+            + "\"domain_hostname\":\"go.brand.com\","
+            + "\"target_url\":\"https://example.com/q4-sale\","
+            + "\"project_id\":\"prj_123\","
+            + "\"expires_at\":null,"
+            + "\"is_active\":true,"
+            + "\"seo_title\":\"Q4 Sale\","
+            + "\"seo_description\":null,"
+            + "\"seo_image_url\":null,"
+            + "\"seo_canonical_url\":null,"
+            + "\"seo_noindex\":false,"
+            + "\"seo_updated_at\":null,"
+            + "\"created_at\":1716000000,"
+            + "\"updated_at\":1716000000,"
+            + "\"tags\":[],"
+            + "\"password_protected\":true,"
+            + "\"max_clicks\":1000,"
+            + "\"click_count\":42,"
+            + "\"track_conversions\":true,"
+            + "\"routing_rules\":[{"
+            + "\"condition_type\":\"country\","
+            + "\"condition_op\":\"is\","
+            + "\"condition_value\":\"ZA\","
+            + "\"target_url\":\"https://example.com/za\"}],"
+            + "\"ab_variants\":["
+            + "{\"id\":1,\"target_url\":\"https://example.com/a\",\"weight\":70},"
+            + "{\"id\":2,\"target_url\":\"https://example.com/b\",\"weight\":30}]"
+            + "}";
+
+    /** A sample batch-create result with one success and one failure. */
+    static final String SAMPLE_BATCH_RESULT_JSON =
+            "{"
+            + "\"created\":1,"
+            + "\"total\":2,"
+            + "\"results\":["
+            + "{\"index\":0,\"ok\":true,\"code\":\"aaa\"},"
+            + "{\"index\":1,\"ok\":false,\"error\":\"bad_target_url\"}]"
+            + "}";
 }

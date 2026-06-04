@@ -4,6 +4,29 @@ All notable changes to `rerout` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Link fields on `Link`: `password_protected`, `max_clicks`,
+  `click_count`, `track_conversions`, `routing_rules` (tuple of `RoutingRule`),
+  and `ab_variants` (tuple of `AbVariant`).
+- `CreateLinkInput` gains optional `password`, `max_clicks`,
+  `track_conversions`, `routing_rules`, and `ab_variants`.
+- `UpdateLinkInput` gains `password`, `max_clicks`, `track_conversions`,
+  `routing_rules`, and `ab_variants` — all using the `UNSET` sentinel.
+  `password` and `max_clicks` accept `None` to clear; `routing_rules` and
+  `ab_variants` are a full replacement.
+- New `RoutingRule` and `AbVariant` dataclasses, with `ConditionType`
+  (`country` | `device`) and `ConditionOp` (`is` | `is_not` | `in`) literal
+  type aliases.
+- New `conversions` namespace — `conversions.record(click_id, event_name,
+  value_cents=None, currency=None)` against `POST /v1/conversions`, returning
+  a `RecordedConversion` (`recorded`, `duplicate`).
+- New `links.create_batch(inputs)` against `POST /v1/links/batch`, returning a
+  `BatchCreateLinksResult` (`created`, `total`, `results` of `BatchLinkResult`).
+- New webhook event type `conversion.recorded`.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added

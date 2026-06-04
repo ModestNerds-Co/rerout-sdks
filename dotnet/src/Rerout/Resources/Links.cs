@@ -36,6 +36,28 @@ public sealed class Links
             cancellationToken);
     }
 
+    /// <summary>
+    /// Create many links in a single request. Returns a partial-success
+    /// envelope — inspect each <see cref="BatchLinkResult.Ok"/> for the per-item
+    /// outcome.
+    /// </summary>
+    /// <param name="links">The links to create, in order.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <exception cref="ReroutException">On any API or transport failure.</exception>
+    public Task<BatchCreateLinksResult> CreateBatchAsync(
+        IReadOnlyList<BatchLinkInput> links,
+        CancellationToken cancellationToken = default)
+    {
+        return _http.SendAsync<BatchCreateLinksResult>(
+            new ReroutRequest
+            {
+                Method = HttpMethod.Post,
+                Path = "/v1/links/batch",
+                Body = new Dictionary<string, object?> { ["links"] = links },
+            },
+            cancellationToken);
+    }
+
     /// <summary>List links in the project, newest first.</summary>
     /// <param name="cursor">Pagination cursor from a previous call's <c>NextCursor</c>.</param>
     /// <param name="limit">Page size. Server-side default and maximum apply.</param>

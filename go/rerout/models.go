@@ -20,6 +20,30 @@ type Tag struct {
 	Color string `json:"color"`
 }
 
+// RoutingRule is one Smart-Links conditional redirect. When the inbound
+// request matches the condition, the link routes to TargetURL instead of the
+// link's default destination.
+//
+// ConditionType is "country" or "device"; ConditionOp is "is", "is_not", or
+// "in". For the "in" operator, ConditionValue is a comma-separated list.
+type RoutingRule struct {
+	ConditionType  string `json:"condition_type"`
+	ConditionOp    string `json:"condition_op"`
+	ConditionValue string `json:"condition_value"`
+	TargetURL      string `json:"target_url"`
+}
+
+// ABVariant is one weighted Smart-Links A/B testing destination. Inbound
+// traffic is split across variants in proportion to their Weight.
+//
+// ID is server-assigned and read-only on responses. On CreateABVariantInput it
+// is absent.
+type ABVariant struct {
+	ID        int64  `json:"id"`
+	TargetURL string `json:"target_url"`
+	Weight    int    `json:"weight"`
+}
+
 // Link is the canonical short-link representation returned by the API.
 type Link struct {
 	Code            string  `json:"code"`
@@ -36,8 +60,34 @@ type Link struct {
 	SEONoindex      bool    `json:"seo_noindex"`
 	SEOUpdatedAt    *int64  `json:"seo_updated_at,omitempty"`
 	Tags            []Tag   `json:"tags"`
-	CreatedAt       int64   `json:"created_at"`
-	UpdatedAt       int64   `json:"updated_at"`
+
+	// Smart Links fields.
+
+	// PasswordProtected reports whether the link requires a password before it
+	// redirects. The password itself is never returned.
+	PasswordProtected bool `json:"password_protected"`
+	// MaxClicks is the click cap after which the link stops redirecting. Nil
+	// for an uncapped link.
+	MaxClicks *int64 `json:"max_clicks,omitempty"`
+	// ClickCount is the number of clicks recorded against the link so far.
+	ClickCount int64 `json:"click_count"`
+	// TrackConversions reports whether conversion tracking is enabled.
+	TrackConversions bool `json:"track_conversions"`
+	// RoutingRules are the conditional redirect rules, evaluated in order.
+	RoutingRules []RoutingRule `json:"routing_rules"`
+	// ABVariants are the weighted A/B testing destinations.
+	ABVariants []ABVariant `json:"ab_variants"`
+
+	CreatedAt int64 `json:"created_at"`
+	UpdatedAt int64 `json:"updated_at"`
+}
+
+// CreateABVariantInput is one weighted A/B variant on CreateLinkInput /
+// UpdateLinkInput. Weight is optional — the server applies an even split when
+// it is unset.
+type CreateABVariantInput struct {
+	TargetURL string `json:"target_url"`
+	Weight    *int   `json:"weight,omitempty"`
 }
 
 // CreateLinkInput is the body for POST /v1/links.
@@ -61,6 +111,19 @@ type CreateLinkInput struct {
 	SEOImageURL     *string `json:"seo_image_url,omitempty"`
 	SEOCanonicalURL *string `json:"seo_canonical_url,omitempty"`
 	SEONoindex      *bool   `json:"seo_noindex,omitempty"`
+
+	// Smart Links fields. All optional.
+
+	// Password, when set, requires visitors to enter it before redirecting.
+	Password *string `json:"password,omitempty"`
+	// MaxClicks caps the number of redirects. Omit for an uncapped link.
+	MaxClicks *int64 `json:"max_clicks,omitempty"`
+	// TrackConversions enables conversion tracking for the link.
+	TrackConversions *bool `json:"track_conversions,omitempty"`
+	// RoutingRules are conditional redirect rules, evaluated in order.
+	RoutingRules []RoutingRule `json:"routing_rules,omitempty"`
+	// ABVariants are weighted A/B testing destinations.
+	ABVariants []CreateABVariantInput `json:"ab_variants,omitempty"`
 }
 
 // UpdateLinkInput is the body for PATCH /v1/links/:code.
@@ -99,6 +162,29 @@ type UpdateLinkInput struct {
 	ClearSEOCanonicalURL bool    `json:"-"`
 
 	SEONoindex *bool `json:"-"`
+
+	// Smart Links fields.
+
+	// Password sets a new password; ClearPassword removes password protection
+	// (sends "password": null). ClearPassword wins over Password.
+	Password      *string `json:"-"`
+	ClearPassword bool    `json:"-"`
+
+	// MaxClicks sets a new click cap; ClearMaxClicks removes the cap (sends
+	// "max_clicks": null). ClearMaxClicks wins over MaxClicks.
+	MaxClicks      *int64 `json:"-"`
+	ClearMaxClicks bool   `json:"-"`
+
+	// TrackConversions toggles conversion tracking.
+	TrackConversions *bool `json:"-"`
+
+	// RoutingRules, when non-nil, fully replaces the link's routing rules. A
+	// non-nil empty slice clears all rules. Nil leaves them untouched.
+	RoutingRules *[]RoutingRule `json:"-"`
+
+	// ABVariants, when non-nil, fully replaces the link's A/B variants. A
+	// non-nil empty slice clears all variants. Nil leaves them untouched.
+	ABVariants *[]CreateABVariantInput `json:"-"`
 }
 
 // MarshalJSON implements json.Marshaler for UpdateLinkInput.
@@ -144,6 +230,25 @@ func (u UpdateLinkInput) MarshalJSON() ([]byte, error) {
 	if u.SEONoindex != nil {
 		out["seo_noindex"] = *u.SEONoindex
 	}
+	if u.ClearPassword {
+		out["password"] = nil
+	} else if u.Password != nil {
+		out["password"] = *u.Password
+	}
+	if u.ClearMaxClicks {
+		out["max_clicks"] = nil
+	} else if u.MaxClicks != nil {
+		out["max_clicks"] = *u.MaxClicks
+	}
+	if u.TrackConversions != nil {
+		out["track_conversions"] = *u.TrackConversions
+	}
+	if u.RoutingRules != nil {
+		out["routing_rules"] = *u.RoutingRules
+	}
+	if u.ABVariants != nil {
+		out["ab_variants"] = *u.ABVariants
+	}
 	return json.Marshal(out)
 }
 
@@ -157,7 +262,12 @@ func (u UpdateLinkInput) IsEmpty() bool {
 		u.SEODescription != nil || u.ClearSEODescription ||
 		u.SEOImageURL != nil || u.ClearSEOImageURL ||
 		u.SEOCanonicalURL != nil || u.ClearSEOCanonicalURL ||
-		u.SEONoindex != nil {
+		u.SEONoindex != nil ||
+		u.Password != nil || u.ClearPassword ||
+		u.MaxClicks != nil || u.ClearMaxClicks ||
+		u.TrackConversions != nil ||
+		u.RoutingRules != nil ||
+		u.ABVariants != nil {
 		return false
 	}
 	return true
@@ -220,6 +330,63 @@ type Project struct {
 // DELETE /v1/projects/me/webhooks/:id.
 type DeleteResult struct {
 	Deleted bool `json:"deleted"`
+}
+
+// ─── Conversions ─────────────────────────────────────────────────────────
+
+// RecordConversionInput is the body for POST /v1/conversions.
+//
+// ClickID and EventName are required. ValueCents and Currency are optional —
+// pointers so they are omitted when unset.
+//
+//	in := rerout.RecordConversionInput{
+//	    ClickID:    "clk_123",
+//	    EventName:  "purchase",
+//	    ValueCents: rerout.Int64(4999),
+//	    Currency:   rerout.String("USD"),
+//	}
+type RecordConversionInput struct {
+	ClickID    string  `json:"click_id"`
+	EventName  string  `json:"event_name"`
+	ValueCents *int64  `json:"value_cents,omitempty"`
+	Currency   *string `json:"currency,omitempty"`
+}
+
+// ConversionResult is the response from POST /v1/conversions.
+//
+// Duplicate is true when the (click_id, event_name) pair was already recorded —
+// the call is idempotent, so Recorded reflects whether a new row was written.
+type ConversionResult struct {
+	Recorded  bool `json:"recorded"`
+	Duplicate bool `json:"duplicate"`
+}
+
+// ─── Batch ───────────────────────────────────────────────────────────────
+
+// BatchLinkInput is one entry in a CreateLinks batch. TargetURL is required;
+// the rest are optional pointers omitted when unset.
+type BatchLinkInput struct {
+	TargetURL      string  `json:"target_url"`
+	Code           *string `json:"code,omitempty"`
+	ExpiresAt      *int64  `json:"expires_at,omitempty"`
+	DomainHostname *string `json:"domain_hostname,omitempty"`
+}
+
+// BatchLinkResult is the per-item outcome of a CreateLinks batch. Index is the
+// zero-based position of the input link. OK reports success; on success Code
+// is populated, otherwise Error carries the failure reason.
+type BatchLinkResult struct {
+	Index int     `json:"index"`
+	OK    bool    `json:"ok"`
+	Code  *string `json:"code,omitempty"`
+	Error *string `json:"error,omitempty"`
+}
+
+// BatchCreateLinksResult is the response from POST /v1/links/batch.
+type BatchCreateLinksResult struct {
+	Created int               `json:"created"`
+	Total   int               `json:"total"`
+	Results []BatchLinkResult `json:"results"`
 }
 
 // Webhook is a webhook endpoint registered to the project. Mirrors the

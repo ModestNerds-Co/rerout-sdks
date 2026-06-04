@@ -7,7 +7,10 @@
 
 package co.rerout.sdk.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,6 +48,13 @@ public final class UpdateLinkInput {
     private final String seoCanonicalUrl;
     private final boolean clearSeoCanonicalUrl;
     private final Boolean seoNoindex;
+    private final String password;
+    private final boolean clearPassword;
+    private final Integer maxClicks;
+    private final boolean clearMaxClicks;
+    private final Boolean trackConversions;
+    private final List<RoutingRule> routingRules;
+    private final List<AbVariantInput> abVariants;
 
     private UpdateLinkInput(Builder b) {
         this.targetUrl = b.targetUrl;
@@ -60,6 +70,17 @@ public final class UpdateLinkInput {
         this.seoCanonicalUrl = b.seoCanonicalUrl;
         this.clearSeoCanonicalUrl = b.clearSeoCanonicalUrl;
         this.seoNoindex = b.seoNoindex;
+        this.password = b.password;
+        this.clearPassword = b.clearPassword;
+        this.maxClicks = b.maxClicks;
+        this.clearMaxClicks = b.clearMaxClicks;
+        this.trackConversions = b.trackConversions;
+        this.routingRules = b.routingRules == null
+                ? null
+                : Collections.unmodifiableList(new ArrayList<>(b.routingRules));
+        this.abVariants = b.abVariants == null
+                ? null
+                : Collections.unmodifiableList(new ArrayList<>(b.abVariants));
     }
 
     /**
@@ -116,6 +137,25 @@ public final class UpdateLinkInput {
         if (seoNoindex != null) {
             map.put("seo_noindex", seoNoindex);
         }
+        if (clearPassword) {
+            map.put("password", null);
+        } else if (password != null) {
+            map.put("password", password);
+        }
+        if (clearMaxClicks) {
+            map.put("max_clicks", null);
+        } else if (maxClicks != null) {
+            map.put("max_clicks", maxClicks);
+        }
+        if (trackConversions != null) {
+            map.put("track_conversions", trackConversions);
+        }
+        if (routingRules != null) {
+            map.put("routing_rules", routingRules);
+        }
+        if (abVariants != null) {
+            map.put("ab_variants", abVariants);
+        }
         return map;
     }
 
@@ -142,6 +182,13 @@ public final class UpdateLinkInput {
         private String seoCanonicalUrl;
         private boolean clearSeoCanonicalUrl;
         private Boolean seoNoindex;
+        private String password;
+        private boolean clearPassword;
+        private Integer maxClicks;
+        private boolean clearMaxClicks;
+        private Boolean trackConversions;
+        private List<RoutingRule> routingRules;
+        private List<AbVariantInput> abVariants;
 
         private Builder() {
         }
@@ -283,6 +330,124 @@ public final class UpdateLinkInput {
          */
         public Builder seoNoindex(boolean value) {
             this.seoNoindex = value;
+            return this;
+        }
+
+        /**
+         * Sets a new Smart Link password. Mutually exclusive in effect with
+         * {@link #clearPassword()} — the clear flag wins if both are called.
+         *
+         * @param value the password
+         * @return this builder
+         */
+        public Builder password(String value) {
+            this.password = value;
+            return this;
+        }
+
+        /**
+         * Sends {@code "password": null} to remove password protection.
+         *
+         * @return this builder
+         */
+        public Builder clearPassword() {
+            this.clearPassword = true;
+            return this;
+        }
+
+        /**
+         * Sets a new click cap. Mutually exclusive in effect with
+         * {@link #clearMaxClicks()} — the clear flag wins if both are called.
+         *
+         * @param value the maximum clicks
+         * @return this builder
+         */
+        public Builder maxClicks(int value) {
+            this.maxClicks = value;
+            return this;
+        }
+
+        /**
+         * Sends {@code "max_clicks": null} to remove an existing click cap.
+         *
+         * @return this builder
+         */
+        public Builder clearMaxClicks() {
+            this.clearMaxClicks = true;
+            return this;
+        }
+
+        /**
+         * Enables or disables conversion tracking for this link.
+         *
+         * @param value {@code true} to track conversions
+         * @return this builder
+         */
+        public Builder trackConversions(boolean value) {
+            this.trackConversions = value;
+            return this;
+        }
+
+        /**
+         * Replaces the link's smart-routing rules in full. Calling this
+         * multiple times accumulates rules for the replacement; pass an empty
+         * list to clear all rules.
+         *
+         * @param rules the routing rules to set
+         * @return this builder
+         */
+        public Builder routingRules(List<RoutingRule> rules) {
+            if (this.routingRules == null) {
+                this.routingRules = new ArrayList<>();
+            }
+            this.routingRules.addAll(rules);
+            return this;
+        }
+
+        /**
+         * Replaces the link's smart-routing rules in full with the given rules.
+         * Calling this multiple times accumulates rules for the replacement.
+         *
+         * @param rules the routing rules to set
+         * @return this builder
+         */
+        public Builder routingRules(RoutingRule... rules) {
+            if (this.routingRules == null) {
+                this.routingRules = new ArrayList<>();
+            }
+            this.routingRules.addAll(java.util.Arrays.asList(rules));
+            return this;
+        }
+
+        /**
+         * Replaces the link's A/B test variants in full. Calling this multiple
+         * times accumulates variants for the replacement; pass an empty list to
+         * clear all variants.
+         *
+         * @param variants the variants to set
+         * @return this builder
+         */
+        public Builder abVariants(List<AbVariantInput> variants) {
+            if (this.abVariants == null) {
+                this.abVariants = new ArrayList<>();
+            }
+            this.abVariants.addAll(variants);
+            return this;
+        }
+
+        /**
+         * Replaces the link's A/B test variants in full with the given
+         * variants. Calling this multiple times accumulates variants for the
+         * replacement.
+         *
+         * @param variants the variants to set
+         * @return this builder
+         */
+        public Builder abVariants(AbVariantInput... variants) {
+            if (this.abVariants == null) {
+                this.abVariants = new ArrayList<>();
+            }
+            this.abVariants.addAll(java.util.Arrays.asList(variants));
             return this;
         }
 

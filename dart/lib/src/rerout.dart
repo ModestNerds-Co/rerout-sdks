@@ -11,6 +11,7 @@
 //
 
 import 'package:dio/dio.dart';
+import 'package:rerout/src/models/batch_create_links.dart';
 import 'package:rerout/src/models/create_link_request.dart';
 import 'package:rerout/src/models/create_webhook_request.dart';
 import 'package:rerout/src/models/created_webhook.dart';
@@ -19,6 +20,8 @@ import 'package:rerout/src/models/list_links_result.dart';
 import 'package:rerout/src/models/list_webhooks_result.dart';
 import 'package:rerout/src/models/project_stats.dart';
 import 'package:rerout/src/models/qr_options.dart';
+import 'package:rerout/src/models/record_conversion_request.dart';
+import 'package:rerout/src/models/recorded_conversion.dart';
 import 'package:rerout/src/models/rerout_exception.dart';
 import 'package:rerout/src/models/result.dart';
 import 'package:rerout/src/models/short_link.dart';
@@ -63,6 +66,7 @@ class Rerout {
     project = Project._(this);
     qr = Qr._(this);
     webhooks = Webhooks._(this);
+    conversions = Conversions._(this);
   }
 
   /// Creates a new instance of the Rerout SDK.
@@ -114,6 +118,9 @@ class Rerout {
 
   /// Webhook endpoint management: create, list, delete.
   late final Webhooks webhooks;
+
+  /// Conversion tracking: record a conversion against a prior click.
+  late final Conversions conversions;
 
   /// The resolved API base URL. Exposed for diagnostics and the QR helper.
   String get baseUrl => _baseUrl;
@@ -227,6 +234,20 @@ class Links {
       path: '/v1/links',
       body: request.toJson(),
       parse: (data) => ShortLink.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Bulk-creates links in one request. Each item succeeds or fails
+  /// independently; inspect `results[i].ok` for per-item outcomes.
+  Future<Result<BatchCreateLinksResult>> createBatch(
+    List<BatchLinkInput> links,
+  ) {
+    return _client.request<BatchCreateLinksResult>(
+      method: 'POST',
+      path: '/v1/links/batch',
+      body: {'links': links.map((l) => l.toJson()).toList()},
+      parse: (data) =>
+          BatchCreateLinksResult.fromJson(data as Map<String, dynamic>),
     );
   }
 
@@ -372,6 +393,25 @@ class Webhooks {
         }
         return true;
       },
+    );
+  }
+}
+
+/// Conversion tracking namespace. Reached via [Rerout.conversions].
+class Conversions {
+  Conversions._(this._client);
+
+  final Rerout _client;
+
+  /// Records a conversion attributed to a prior click via its `clickId`
+  /// (`rrid`). Idempotent per `(clickId, eventName)`.
+  Future<Result<RecordedConversion>> record(RecordConversionRequest request) {
+    return _client.request<RecordedConversion>(
+      method: 'POST',
+      path: '/v1/conversions',
+      body: request.toJson(),
+      parse: (data) =>
+          RecordedConversion.fromJson(data as Map<String, dynamic>),
     );
   }
 }

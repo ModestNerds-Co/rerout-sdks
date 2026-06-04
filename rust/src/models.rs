@@ -19,6 +19,71 @@ pub struct Tag {
     pub color: String,
 }
 
+// ─── Smart Links ──────────────────────────────────────────────────────────
+
+/// A Smart-Links conditional redirect rule.
+///
+/// When an inbound request matches the condition, the link routes to
+/// [`RoutingRule::target_url`] instead of the link's default destination.
+///
+/// `condition_type` is `"country"` or `"device"`; `condition_op` is `"is"`,
+/// `"is_not"`, or `"in"`. For the `"in"` operator, `condition_value` is a
+/// comma-separated list.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RoutingRule {
+    /// What the rule matches on — `"country"` or `"device"`.
+    pub condition_type: String,
+    /// Comparison operator — `"is"`, `"is_not"`, or `"in"`.
+    pub condition_op: String,
+    /// Value(s) to compare against. Comma-separated for the `"in"` operator.
+    pub condition_value: String,
+    /// Destination URL used when the condition matches.
+    pub target_url: String,
+}
+
+/// A weighted Smart-Links A/B testing destination as returned by the API.
+///
+/// Inbound traffic is split across variants in proportion to their `weight`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AbVariant {
+    /// Server-assigned variant ID.
+    pub id: i64,
+    /// Destination URL for this variant.
+    pub target_url: String,
+    /// Relative traffic weight.
+    #[serde(default)]
+    pub weight: i32,
+}
+
+/// A weighted A/B variant on [`CreateLinkInput`] / [`UpdateLinkInput`].
+///
+/// `weight` is optional — the server applies an even split when it is `None`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CreateAbVariantInput {
+    /// Destination URL for this variant.
+    pub target_url: String,
+    /// Relative traffic weight. Omitted when `None`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weight: Option<i32>,
+}
+
+impl CreateAbVariantInput {
+    /// Build a variant with just a destination URL — even split.
+    pub fn new(target_url: impl Into<String>) -> Self {
+        Self {
+            target_url: target_url.into(),
+            weight: None,
+        }
+    }
+
+    /// Builder — set the relative traffic weight.
+    #[must_use]
+    pub fn with_weight(mut self, weight: i32) -> Self {
+        self.weight = Some(weight);
+        self
+    }
+}
+
 // ─── Link ───────────────────────────────────────────────────────────────────
 
 /// A single short link as returned by the Rerout API.
@@ -59,6 +124,26 @@ pub struct Link {
     /// get, list, and update. A missing field deserializes to an empty `Vec`.
     #[serde(default)]
     pub tags: Vec<Tag>,
+    /// Whether the link requires a password before redirecting. The password
+    /// itself is never returned.
+    #[serde(default)]
+    pub password_protected: bool,
+    /// Click cap after which the link stops redirecting. `None` when uncapped.
+    pub max_clicks: Option<i64>,
+    /// Number of clicks recorded against the link so far.
+    #[serde(default)]
+    pub click_count: i64,
+    /// Whether conversion tracking is enabled for this link.
+    #[serde(default)]
+    pub track_conversions: bool,
+    /// Conditional redirect rules, evaluated in order. A missing field
+    /// deserializes to an empty `Vec`.
+    #[serde(default)]
+    pub routing_rules: Vec<RoutingRule>,
+    /// Weighted A/B testing destinations. A missing field deserializes to an
+    /// empty `Vec`.
+    #[serde(default)]
+    pub ab_variants: Vec<AbVariant>,
 }
 
 // ─── Inputs ─────────────────────────────────────────────────────────────────
@@ -95,6 +180,21 @@ pub struct CreateLinkInput {
     /// Whether the preview HTML is marked noindex.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seo_noindex: Option<bool>,
+    /// Password required before the link redirects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password: Option<String>,
+    /// Click cap after which the link stops redirecting.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_clicks: Option<i64>,
+    /// Enable conversion tracking for this link.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub track_conversions: Option<bool>,
+    /// Conditional redirect rules, evaluated in order.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub routing_rules: Vec<RoutingRule>,
+    /// Weighted A/B testing destinations.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub ab_variants: Vec<CreateAbVariantInput>,
 }
 
 impl CreateLinkInput {
@@ -161,6 +261,41 @@ impl CreateLinkInput {
         self.seo_noindex = Some(seo_noindex);
         self
     }
+
+    /// Builder — require a password before redirecting.
+    #[must_use]
+    pub fn with_password(mut self, password: impl Into<String>) -> Self {
+        self.password = Some(password.into());
+        self
+    }
+
+    /// Builder — cap the number of redirects.
+    #[must_use]
+    pub fn with_max_clicks(mut self, max_clicks: i64) -> Self {
+        self.max_clicks = Some(max_clicks);
+        self
+    }
+
+    /// Builder — enable conversion tracking.
+    #[must_use]
+    pub fn with_track_conversions(mut self, track_conversions: bool) -> Self {
+        self.track_conversions = Some(track_conversions);
+        self
+    }
+
+    /// Builder — set the conditional redirect rules.
+    #[must_use]
+    pub fn with_routing_rules(mut self, routing_rules: Vec<RoutingRule>) -> Self {
+        self.routing_rules = routing_rules;
+        self
+    }
+
+    /// Builder — set the weighted A/B testing variants.
+    #[must_use]
+    pub fn with_ab_variants(mut self, ab_variants: Vec<CreateAbVariantInput>) -> Self {
+        self.ab_variants = ab_variants;
+        self
+    }
 }
 
 /// Body for `PATCH /v1/links/:code`.
@@ -202,6 +337,23 @@ pub struct UpdateLinkInput {
     /// Toggle the noindex flag.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seo_noindex: Option<Option<bool>>,
+    /// New password, or explicit null to remove password protection.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password: Option<Option<String>>,
+    /// New click cap, or explicit null to remove the cap.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_clicks: Option<Option<i64>>,
+    /// Toggle conversion tracking.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub track_conversions: Option<Option<bool>>,
+    /// Full replacement of the link's routing rules. `Some(vec)` replaces them
+    /// (an empty `Vec` clears all rules); `None` leaves them untouched.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub routing_rules: Option<Vec<RoutingRule>>,
+    /// Full replacement of the link's A/B variants. `Some(vec)` replaces them
+    /// (an empty `Vec` clears all variants); `None` leaves them untouched.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ab_variants: Option<Vec<CreateAbVariantInput>>,
 }
 
 impl UpdateLinkInput {
@@ -221,6 +373,11 @@ impl UpdateLinkInput {
             && self.seo_image_url.is_none()
             && self.seo_canonical_url.is_none()
             && self.seo_noindex.is_none()
+            && self.password.is_none()
+            && self.max_clicks.is_none()
+            && self.track_conversions.is_none()
+            && self.routing_rules.is_none()
+            && self.ab_variants.is_none()
     }
 
     /// Set a new `target_url`.
@@ -311,6 +468,55 @@ impl UpdateLinkInput {
     #[must_use]
     pub fn set_seo_noindex(mut self, seo_noindex: bool) -> Self {
         self.seo_noindex = Some(Some(seo_noindex));
+        self
+    }
+
+    /// Set a new password.
+    #[must_use]
+    pub fn set_password(mut self, password: impl Into<String>) -> Self {
+        self.password = Some(Some(password.into()));
+        self
+    }
+
+    /// Remove password protection — sends `password: null`.
+    #[must_use]
+    pub fn clear_password(mut self) -> Self {
+        self.password = Some(None);
+        self
+    }
+
+    /// Set a new click cap.
+    #[must_use]
+    pub fn set_max_clicks(mut self, max_clicks: i64) -> Self {
+        self.max_clicks = Some(Some(max_clicks));
+        self
+    }
+
+    /// Remove the click cap — sends `max_clicks: null`.
+    #[must_use]
+    pub fn clear_max_clicks(mut self) -> Self {
+        self.max_clicks = Some(None);
+        self
+    }
+
+    /// Toggle conversion tracking.
+    #[must_use]
+    pub fn set_track_conversions(mut self, track_conversions: bool) -> Self {
+        self.track_conversions = Some(Some(track_conversions));
+        self
+    }
+
+    /// Replace the link's routing rules. An empty `Vec` clears all rules.
+    #[must_use]
+    pub fn set_routing_rules(mut self, routing_rules: Vec<RoutingRule>) -> Self {
+        self.routing_rules = Some(routing_rules);
+        self
+    }
+
+    /// Replace the link's A/B variants. An empty `Vec` clears all variants.
+    #[must_use]
+    pub fn set_ab_variants(mut self, ab_variants: Vec<CreateAbVariantInput>) -> Self {
+        self.ab_variants = Some(ab_variants);
         self
     }
 }
@@ -431,6 +637,146 @@ pub struct DeleteLinkResult {
     /// Whether the delete succeeded.
     #[serde(default)]
     pub deleted: bool,
+}
+
+// ─── Conversions ────────────────────────────────────────────────────────────
+
+/// Body for `POST /v1/conversions`.
+///
+/// `click_id` and `event_name` are required. `value_cents` and `currency` are
+/// optional and only sent when `Some`. Use [`RecordConversionInput::new`] for
+/// the minimal happy path.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct RecordConversionInput {
+    /// The click this conversion is attributed to.
+    pub click_id: String,
+    /// Name of the conversion event (e.g. `purchase`, `signup`).
+    pub event_name: String,
+    /// Monetary value in the smallest currency unit (cents).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value_cents: Option<i64>,
+    /// ISO 4217 currency code (e.g. `USD`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub currency: Option<String>,
+}
+
+impl RecordConversionInput {
+    /// Build the minimal input: a click id and an event name.
+    pub fn new(click_id: impl Into<String>, event_name: impl Into<String>) -> Self {
+        Self {
+            click_id: click_id.into(),
+            event_name: event_name.into(),
+            value_cents: None,
+            currency: None,
+        }
+    }
+
+    /// Builder — set the conversion value in cents.
+    #[must_use]
+    pub fn with_value_cents(mut self, value_cents: i64) -> Self {
+        self.value_cents = Some(value_cents);
+        self
+    }
+
+    /// Builder — set the ISO 4217 currency code.
+    #[must_use]
+    pub fn with_currency(mut self, currency: impl Into<String>) -> Self {
+        self.currency = Some(currency.into());
+        self
+    }
+}
+
+/// Response body for `POST /v1/conversions`.
+///
+/// The call is idempotent on the `(click_id, event_name)` pair: `recorded`
+/// reflects whether a new row was written, and `duplicate` is `true` when the
+/// pair was already recorded.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConversionResult {
+    /// Whether a new conversion row was written.
+    #[serde(default)]
+    pub recorded: bool,
+    /// Whether the event duplicated one already stored.
+    #[serde(default)]
+    pub duplicate: bool,
+}
+
+// ─── Batch ──────────────────────────────────────────────────────────────────
+
+/// One entry in a [`crate::Links::create_batch`] request.
+///
+/// `target_url` is required; the rest are optional and only sent when `Some`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct BatchLinkInput {
+    /// Absolute `https://` destination URL.
+    pub target_url: String,
+    /// Custom path. Only valid with a verified `domain_hostname`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    /// Unix seconds — expiration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<i64>,
+    /// Verified custom domain to host this link on.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub domain_hostname: Option<String>,
+}
+
+impl BatchLinkInput {
+    /// Build the minimal entry: just a destination URL.
+    pub fn new(target_url: impl Into<String>) -> Self {
+        Self {
+            target_url: target_url.into(),
+            ..Self::default()
+        }
+    }
+
+    /// Builder — set the custom code (path).
+    #[must_use]
+    pub fn with_code(mut self, code: impl Into<String>) -> Self {
+        self.code = Some(code.into());
+        self
+    }
+
+    /// Builder — set the expiration in unix seconds.
+    #[must_use]
+    pub fn with_expires_at(mut self, expires_at: i64) -> Self {
+        self.expires_at = Some(expires_at);
+        self
+    }
+
+    /// Builder — set the verified custom domain.
+    #[must_use]
+    pub fn with_domain_hostname(mut self, domain_hostname: impl Into<String>) -> Self {
+        self.domain_hostname = Some(domain_hostname.into());
+        self
+    }
+}
+
+/// Per-item outcome of a [`crate::Links::create_batch`] request.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BatchLinkResult {
+    /// Zero-based position of the input link.
+    pub index: usize,
+    /// Whether this link was created successfully.
+    pub ok: bool,
+    /// New short code, present on success.
+    pub code: Option<String>,
+    /// Failure reason, present when `ok` is `false`.
+    pub error: Option<String>,
+}
+
+/// Response body for `POST /v1/links/batch`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BatchCreateLinksResult {
+    /// Number of links created successfully.
+    #[serde(default)]
+    pub created: usize,
+    /// Total number of links in the request.
+    #[serde(default)]
+    pub total: usize,
+    /// Per-item results, in request order.
+    #[serde(default)]
+    pub results: Vec<BatchLinkResult>,
 }
 
 // ─── Webhooks ─────────────────────────────────────────────────────────────────

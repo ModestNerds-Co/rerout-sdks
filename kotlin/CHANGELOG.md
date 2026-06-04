@@ -5,6 +5,27 @@ this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+
+- Smart Links support on `Link`: read-only `passwordProtected`, `maxClicks`,
+  `clickCount`, `trackConversions`, `routingRules` (`List<RoutingRule>`), and
+  `abVariants` (`List<AbVariant>`). New `RoutingRule` and `AbVariant` data
+  classes; all default sensibly when the server omits them.
+- Smart Links input on `CreateLinkInput`: optional `password`, `maxClicks`,
+  `trackConversions`, `routingRules`, and `abVariants` (items via the new
+  `AbVariantInput`, whose `weight` is optional).
+- Smart Links input on `UpdateLinkInput` / its builder: `password` and
+  `maxClicks` (with `clearPassword()` / `clearMaxClicks()` to null them out),
+  `trackConversions`, and full-replace `routingRules` / `abVariants`.
+- `conversions` namespace — `record(RecordConversionInput)` POSTs to
+  `/v1/conversions` and returns `RecordedConversion` (`recorded`, `duplicate`).
+- `links.createBatch(List<BatchLinkInput>)` — POSTs to `/v1/links/batch` and
+  returns a partial-success `BatchCreateLinksResult` (`created`, `total`,
+  per-item `BatchLinkResult`).
+- New webhook event type `conversion.recorded` is now deliverable.
+
 ## [0.3.0] - 2026-06-03
 
 ### Added
@@ -52,6 +73,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `maven-publish` configuration targeting Maven Central as
   `co.rerout:rerout-kotlin`, with sources and javadoc jars.
 
+[0.4.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin/v0.4.0
 [0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/kotlin-v0.1.0

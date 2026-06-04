@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Rerout.Models;
@@ -48,4 +49,29 @@ public sealed record CreateLinkInput
     [JsonPropertyName("seo_noindex")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? SeoNoindex { get; init; }
+
+    /// <summary>Smart Links — plaintext password to gate the link. Hashed server-side.</summary>
+    [JsonPropertyName("password")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Password { get; init; }
+
+    /// <summary>Smart Links — cap the link to this many clicks.</summary>
+    [JsonPropertyName("max_clicks")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? MaxClicks { get; init; }
+
+    /// <summary>Smart Links — mint a conversion click id on redirect.</summary>
+    [JsonPropertyName("track_conversions")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? TrackConversions { get; init; }
+
+    /// <summary>Smart Links — ordered geo/device routing rules (full set).</summary>
+    [JsonPropertyName("routing_rules")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<RoutingRule>? RoutingRules { get; init; }
+
+    /// <summary>Smart Links — weighted A/B destinations (full set).</summary>
+    [JsonPropertyName("ab_variants")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<AbVariantInput>? AbVariants { get; init; }
 }

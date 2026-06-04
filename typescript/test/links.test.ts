@@ -24,6 +24,12 @@ const SAMPLE_LINK: Link = {
   seo_noindex: true,
   seo_updated_at: null,
   tags: [{ id: 'tag_1', name: 'campaign', color: '#ff8800' }],
+  password_protected: false,
+  max_clicks: null,
+  click_count: 0,
+  track_conversions: false,
+  routing_rules: [],
+  ab_variants: [],
   created_at: 1_700_000_000,
   updated_at: 1_700_000_000,
 }
@@ -143,5 +149,161 @@ describe('Links', () => {
       'https://api.rerout.co/v1/links/a%2Bb',
       'https://api.rerout.co/v1/links/caf%C3%A9',
     ])
+  })
+
+  it('create forwards Smart Links fields when provided', async () => {
+    const created: Link = {
+      ...SAMPLE_LINK,
+      tags: [],
+      password_protected: true,
+      max_clicks: 100,
+      track_conversions: true,
+      routing_rules: [
+        {
+          condition_type: 'country',
+          condition_op: 'is',
+          condition_value: 'ZA',
+          target_url: 'https://example.com/za',
+        },
+      ],
+      ab_variants: [
+        { id: 1, target_url: 'https://example.com/a', weight: 1 },
+        { id: 2, target_url: 'https://example.com/b', weight: 3 },
+      ],
+    }
+    const fetchImpl = makeFetch((url, init) => {
+      expect(url).toBe('https://api.rerout.co/v1/links')
+      const body = JSON.parse(init.body as string)
+      expect(body.password).toBe('s3cret')
+      expect(body.max_clicks).toBe(100)
+      expect(body.track_conversions).toBe(true)
+      expect(body.routing_rules).toEqual([
+        {
+          condition_type: 'country',
+          condition_op: 'is',
+          condition_value: 'ZA',
+          target_url: 'https://example.com/za',
+        },
+      ])
+      expect(body.ab_variants).toEqual([
+        { target_url: 'https://example.com/a' },
+        { target_url: 'https://example.com/b', weight: 3 },
+      ])
+      return new Response(JSON.stringify(created), {
+        status: 201,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+    const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
+    const link = await r.links.create({
+      target_url: 'https://example.com',
+      password: 's3cret',
+      max_clicks: 100,
+      track_conversions: true,
+      routing_rules: [
+        {
+          condition_type: 'country',
+          condition_op: 'is',
+          condition_value: 'ZA',
+          target_url: 'https://example.com/za',
+        },
+      ],
+      ab_variants: [
+        { target_url: 'https://example.com/a' },
+        { target_url: 'https://example.com/b', weight: 3 },
+      ],
+    })
+    expect(link.password_protected).toBe(true)
+    expect(link.max_clicks).toBe(100)
+    expect(link.track_conversions).toBe(true)
+    expect(link.routing_rules[0]?.condition_value).toBe('ZA')
+    expect(link.ab_variants[1]?.weight).toBe(3)
+  })
+
+  it('update clears password and max_clicks with explicit null', async () => {
+    const fetchImpl = makeFetch((url, init) => {
+      expect(url).toBe('https://api.rerout.co/v1/links/abc123')
+      expect(init.method).toBe('PATCH')
+      expect(JSON.parse(init.body as string)).toEqual({
+        password: null,
+        max_clicks: null,
+        track_conversions: false,
+      })
+      return new Response(JSON.stringify(SAMPLE_LINK), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+    const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
+    await r.links.update('abc123', {
+      password: null,
+      max_clicks: null,
+      track_conversions: false,
+    })
+  })
+
+  it('update full-replaces routing_rules and ab_variants', async () => {
+    const fetchImpl = makeFetch((url, init) => {
+      const body = JSON.parse(init.body as string)
+      expect(body.routing_rules).toEqual([
+        {
+          condition_type: 'device',
+          condition_op: 'in',
+          condition_value: 'mobile,tablet',
+          target_url: 'https://example.com/m',
+        },
+      ])
+      expect(body.ab_variants).toEqual([{ target_url: 'https://example.com/x', weight: 2 }])
+      return new Response(JSON.stringify(SAMPLE_LINK), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+    const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
+    await r.links.update('abc123', {
+      routing_rules: [
+        {
+          condition_type: 'device',
+          condition_op: 'in',
+          condition_value: 'mobile,tablet',
+          target_url: 'https://example.com/m',
+        },
+      ],
+      ab_variants: [{ target_url: 'https://example.com/x', weight: 2 }],
+    })
+  })
+
+  it('createBatch posts to /v1/links/batch and returns per-item results', async () => {
+    const fetchImpl = makeFetch((url, init) => {
+      expect(url).toBe('https://api.rerout.co/v1/links/batch')
+      expect(init.method).toBe('POST')
+      expect(JSON.parse(init.body as string)).toEqual({
+        links: [
+          { target_url: 'https://example.com/1' },
+          { target_url: 'https://example.com/2', code: 'two' },
+        ],
+      })
+      return new Response(
+        JSON.stringify({
+          created: 1,
+          total: 2,
+          results: [
+            { index: 0, ok: true, code: 'aaa111' },
+            { index: 1, ok: false, error: 'code already in use' },
+          ],
+        }),
+        { status: 207, headers: { 'content-type': 'application/json' } },
+      )
+    })
+    const r = new Rerout({ apiKey: 'rrk_test', fetch: fetchImpl })
+    const result = await r.links.createBatch([
+      { target_url: 'https://example.com/1' },
+      { target_url: 'https://example.com/2', code: 'two' },
+    ])
+    expect(result.created).toBe(1)
+    expect(result.total).toBe(2)
+    expect(result.results[0]?.code).toBe('aaa111')
+    expect(result.results[1]?.ok).toBe(false)
+    expect(result.results[1]?.error).toBe('code already in use')
   })
 })

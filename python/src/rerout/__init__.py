@@ -17,10 +17,23 @@ https://github.com/ModestNerds-Co/rerout-sdks for more details.
 
 from __future__ import annotations
 
-from ._client import DEFAULT_BASE_URL, Links, Project, Qr, Rerout, Webhooks
+from ._client import (
+    DEFAULT_BASE_URL,
+    Conversions,
+    Links,
+    Project,
+    Qr,
+    Rerout,
+    Webhooks,
+)
 from ._errors import ReroutError
 from ._models import (
     UNSET,
+    AbVariant,
+    BatchCreateLinksResult,
+    BatchLinkResult,
+    ConditionOp,
+    ConditionType,
     CreatedWebhook,
     CreateLinkInput,
     CreateWebhookInput,
@@ -33,6 +46,8 @@ from ._models import (
     ProjectInfo,
     ProjectStats,
     QrOptions,
+    RecordedConversion,
+    RoutingRule,
     StatsBreakdown,
     Tag,
     UpdateLinkInput,
@@ -44,12 +59,18 @@ from ._webhooks import (
     verify_rerout_signature,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "DEFAULT_BASE_URL",
     "DEFAULT_SIGNATURE_TOLERANCE_SECONDS",
     "UNSET",
+    "AbVariant",
+    "BatchCreateLinksResult",
+    "BatchLinkResult",
+    "ConditionOp",
+    "ConditionType",
+    "Conversions",
     "CreateLinkInput",
     "CreateWebhookInput",
     "CreatedWebhook",
@@ -65,8 +86,10 @@ __all__ = [
     "ProjectStats",
     "Qr",
     "QrOptions",
+    "RecordedConversion",
     "Rerout",
     "ReroutError",
+    "RoutingRule",
     "StatsBreakdown",
     "Tag",
     "UpdateLinkInput",

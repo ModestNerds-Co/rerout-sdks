@@ -104,6 +104,73 @@ rerout.links.update("q4", UpdateLinkInput(is_active=False))
 Calling `update` with an `UpdateLinkInput` where no field has been set
 raises `ReroutError(code='bad_request')` without hitting the API.
 
+### Smart Links
+
+Links carry Smart Link configuration: `password_protected`, `max_clicks`,
+`click_count`, `track_conversions`, plus `routing_rules` (a tuple of
+`RoutingRule`) and `ab_variants` (a tuple of `AbVariant`).
+
+```python
+from rerout import AbVariant, CreateLinkInput, RoutingRule, UpdateLinkInput
+
+rerout.links.create(
+    CreateLinkInput(
+        target_url="https://example.com",
+        password="hunter2",
+        max_clicks=500,
+        track_conversions=True,
+        routing_rules=[
+            RoutingRule(
+                condition_type="country",   # "country" | "device"
+                condition_op="in",          # "is" | "is_not" | "in"
+                condition_value="US,CA",
+                target_url="https://example.com/na",
+            )
+        ],
+        ab_variants=[
+            AbVariant(target_url="https://example.com/a", weight=70),
+            AbVariant(target_url="https://example.com/b", weight=30),
+        ],
+    )
+)
+
+# On update, password/max_clicks accept None to clear; routing_rules and
+# ab_variants fully replace the existing config.
+rerout.links.update("q4", UpdateLinkInput(password=None, max_clicks=None))
+rerout.links.update("q4", UpdateLinkInput(routing_rules=[], ab_variants=[]))
+```
+
+### Batch link creation
+
+```python
+from rerout import CreateLinkInput
+
+result = rerout.links.create_batch(
+    [
+        CreateLinkInput(target_url="https://example.com/1"),
+        CreateLinkInput(target_url="https://example.com/2", code="promo"),
+    ]
+)
+print(result.created, "of", result.total)
+for item in result.results:
+    print(item.index, item.ok, item.code or item.error)
+```
+
+The batch endpoint accepts `target_url`, `code`, `expires_at`, and
+`domain_hostname` per link; other fields are ignored.
+
+### Conversions
+
+```python
+result = rerout.conversions.record(
+    "clk_123", "purchase", value_cents=4999, currency="USD"
+)
+print(result.recorded, result.duplicate)
+```
+
+`value_cents` and `currency` are optional. The call is idempotent — a repeat
+for the same click + event returns `duplicate=True`.
+
 ### Project
 
 ```python

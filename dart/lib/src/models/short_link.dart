@@ -11,6 +11,8 @@
 //
 
 import 'package:meta/meta.dart';
+import 'package:rerout/src/models/ab_variant.dart';
+import 'package:rerout/src/models/routing_rule.dart';
 import 'package:rerout/src/models/tag.dart';
 
 /// A short link as returned by the Rerout API.
@@ -27,6 +29,12 @@ class ShortLink {
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
+    this.passwordProtected = false,
+    this.clickCount = 0,
+    this.trackConversions = false,
+    this.routingRules = const [],
+    this.abVariants = const [],
+    this.maxClicks,
     this.domainHostname,
     this.expiresAt,
     this.seoTitle,
@@ -51,6 +59,20 @@ class ShortLink {
             .whereType<Map<String, dynamic>>()
             .map(Tag.fromJson)
             .toList(growable: false),
+    passwordProtected: json['password_protected'] as bool? ?? false,
+    clickCount: json['click_count'] as int? ?? 0,
+    trackConversions: json['track_conversions'] as bool? ?? false,
+    routingRules:
+        (json['routing_rules'] as List<dynamic>? ?? const <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(RoutingRule.fromJson)
+            .toList(growable: false),
+    abVariants:
+        (json['ab_variants'] as List<dynamic>? ?? const <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(AbVariant.fromJson)
+            .toList(growable: false),
+    maxClicks: json['max_clicks'] as int?,
     domainHostname: json['domain_hostname'] as String?,
     expiresAt: json['expires_at'] as int?,
     seoTitle: json['seo_title'] as String?,
@@ -87,6 +109,24 @@ class ShortLink {
   /// Tags attached to the link. Empty on create; populated on get/list/update.
   final List<Tag> tags;
 
+  /// Smart Links: whether a password is required to follow this link.
+  final bool passwordProtected;
+
+  /// Smart Links: total clicks recorded against this link.
+  final int clickCount;
+
+  /// Smart Links: whether conversion tracking is enabled.
+  final bool trackConversions;
+
+  /// Smart Links: ordered geo/device routing rules.
+  final List<RoutingRule> routingRules;
+
+  /// Smart Links: weighted A/B destinations.
+  final List<AbVariant> abVariants;
+
+  /// Smart Links: click cap, or null when uncapped.
+  final int? maxClicks;
+
   /// Verified custom domain hosting this link, when one is bound.
   final String? domainHostname;
 
@@ -121,6 +161,12 @@ class ShortLink {
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt &&
           _tagsEqual(tags, other.tags) &&
+          passwordProtected == other.passwordProtected &&
+          clickCount == other.clickCount &&
+          trackConversions == other.trackConversions &&
+          _listEqual(routingRules, other.routingRules) &&
+          _listEqual(abVariants, other.abVariants) &&
+          maxClicks == other.maxClicks &&
           domainHostname == other.domainHostname &&
           expiresAt == other.expiresAt &&
           seoTitle == other.seoTitle &&
@@ -140,20 +186,30 @@ class ShortLink {
     createdAt,
     updatedAt,
     Object.hashAll(tags),
+    passwordProtected,
+    clickCount,
+    trackConversions,
+    Object.hashAll(routingRules),
+    Object.hashAll(abVariants),
+    maxClicks,
     domainHostname,
     expiresAt,
     seoTitle,
-    seoDescription,
-    seoImageUrl,
-    seoCanonicalUrl,
-    seoUpdatedAt,
+    Object.hash(
+      seoDescription,
+      seoImageUrl,
+      seoCanonicalUrl,
+      seoUpdatedAt,
+    ),
   );
 
   @override
   String toString() => 'ShortLink(code: $code, shortUrl: $shortUrl)';
 }
 
-bool _tagsEqual(List<Tag> a, List<Tag> b) {
+bool _tagsEqual(List<Tag> a, List<Tag> b) => _listEqual(a, b);
+
+bool _listEqual<T>(List<T> a, List<T> b) {
   if (identical(a, b)) return true;
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {

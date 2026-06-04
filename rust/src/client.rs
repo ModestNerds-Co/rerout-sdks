@@ -8,6 +8,7 @@ use reqwest::{Client as HttpClient, Method, StatusCode};
 use serde::Serialize;
 use url::Url;
 
+use crate::conversions::Conversions;
 use crate::error::{ReroutError, Result, build_api_error};
 use crate::links::Links;
 use crate::project::Project;
@@ -207,6 +208,11 @@ impl Rerout {
     /// Access the webhook endpoint management namespace — create, list, delete.
     pub fn webhooks(&self) -> Webhooks<'_> {
         Webhooks::new(self)
+    }
+
+    /// Access the conversion-tracking namespace — record conversion events.
+    pub fn conversions(&self) -> Conversions<'_> {
+        Conversions::new(self)
     }
 
     /// The resolved base URL — trailing slashes trimmed.
