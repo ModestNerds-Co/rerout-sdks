@@ -10,6 +10,29 @@ export interface Tag {
   color: string
 }
 
+/** A tag with the number of live links it is attached to (list response). */
+export interface TagSummary extends Tag {
+  link_count: number
+}
+
+/** Result of `tags.list()`. */
+export interface ListTagsResult {
+  tags: TagSummary[]
+}
+
+export interface CreateTagInput {
+  /** Tag label. Required. */
+  name: string
+  /** Tag color. Optional; server validates against its palette (default `teal`). */
+  color?: string
+}
+
+/** Patch for a tag. Omitted fields are left unchanged. */
+export interface UpdateTagInput {
+  name?: string
+  color?: string
+}
+
 /** What a routing rule matches against. */
 export type RoutingConditionType = 'country' | 'device'
 

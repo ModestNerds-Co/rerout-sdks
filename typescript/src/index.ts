@@ -16,6 +16,7 @@ export {
   Qr,
   Webhooks,
   Conversions,
+  Tags,
 } from './client.js'
 export type { ReroutClientOptions } from './client.js'
 export { ReroutError } from './errors.js'
@@ -33,12 +34,14 @@ export type {
   BatchLinkResult,
   CreateLinkInput,
   CreatedWebhook,
+  CreateTagInput,
   CreateWebhookInput,
   DailyClicksPoint,
   Link,
   LinkStats,
   ListLinksParams,
   ListLinksResult,
+  ListTagsResult,
   ListWebhooksResult,
   ProjectStats,
   QrUrlOptions,
@@ -49,7 +52,9 @@ export type {
   RoutingRule,
   StatsBreakdown,
   Tag,
+  TagSummary,
   UpdateLinkInput,
+  UpdateTagInput,
   Webhook,
   WebhookPayloadFormat,
 } from './types.js'

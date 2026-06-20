@@ -99,6 +99,15 @@ The `signing_secret` returned by `create` is only returned once; persist it on
 receipt to verify inbound payloads (see below). Webhook management is API-key
 authed.
 
+### Tags
+
+```ts
+const { tags } = await rerout.tags.list() // each carries link_count
+const tag = await rerout.tags.create({ name: 'Spring 2026', color: 'teal' })
+await rerout.tags.update(tag.id, { color: 'red' })
+await rerout.tags.delete(tag.id)
+```
+
 ### Webhook signature verification
 
 ```ts

@@ -5,17 +5,21 @@ import type {
   BatchLinkInput,
   CreateLinkInput,
   CreatedWebhook,
+  CreateTagInput,
   CreateWebhookInput,
   Link,
   LinkStats,
   ListLinksParams,
   ListLinksResult,
+  ListTagsResult,
   ListWebhooksResult,
   ProjectStats,
   QrUrlOptions,
   RecordConversionInput,
   RecordedConversion,
+  Tag,
   UpdateLinkInput,
+  UpdateTagInput,
 } from './types.js'
 
 /** Default production API URL. Override via `baseUrl` for staging / self-hosted. */
@@ -67,6 +71,8 @@ export class Rerout {
   readonly webhooks: Webhooks
   /** Conversion tracking: record a conversion against a prior click. */
   readonly conversions: Conversions
+  /** Tag management: list, create, update, delete. */
+  readonly tags: Tags
 
   private readonly apiKey: string
   private readonly baseUrl: string
@@ -104,6 +110,7 @@ export class Rerout {
     this.qr = new Qr(this)
     this.webhooks = new Webhooks(this)
     this.conversions = new Conversions(this)
+    this.tags = new Tags(this)
   }
 
   /** @internal — invoked by Links / Project / Qr. */
@@ -343,6 +350,48 @@ export class Conversions {
       method: 'POST',
       path: '/v1/conversions',
       body: input,
+    })
+  }
+}
+
+export class Tags {
+  /** @internal */
+  constructor(private readonly client: Rerout) {}
+
+  /** List the project's tags with their live link counts. */
+  list(): Promise<ListTagsResult> {
+    return this.client.request<ListTagsResult>({
+      method: 'GET',
+      path: '/v1/projects/me/tags',
+    })
+  }
+
+  /** Create a tag. `color` is optional; the server defaults it. */
+  create(input: CreateTagInput): Promise<Tag> {
+    return this.client.request<Tag>({
+      method: 'POST',
+      path: '/v1/projects/me/tags',
+      body: input,
+    })
+  }
+
+  /**
+   * Update a tag's name and/or color. Mirrors `links.update`: omitted fields are
+   * left unchanged; the server rejects a fully empty patch.
+   */
+  update(tagId: string, input: UpdateTagInput): Promise<Tag> {
+    return this.client.request<Tag>({
+      method: 'PATCH',
+      path: `/v1/projects/me/tags/${encodeURIComponent(tagId)}`,
+      body: input,
+    })
+  }
+
+  /** Delete a tag and drop its assignments from all links. */
+  delete(tagId: string): Promise<{ deleted: boolean }> {
+    return this.client.request<{ deleted: boolean }>({
+      method: 'DELETE',
+      path: `/v1/projects/me/tags/${encodeURIComponent(tagId)}`,
     })
   }
 }
