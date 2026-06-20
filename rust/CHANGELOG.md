@@ -4,6 +4,19 @@ All notable changes to the `rerout` crate are documented in this file. The
 format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- New `tags` namespace via `Rerout::tags()` — `list`, `create`, `update`, and
+  `delete` against `/v1/projects/me/tags` (API-key auth, project resolved from
+  the key). `list` returns `ListTagsResult { tags: Vec<TagSummary> }`, where
+  `TagSummary` flattens a `Tag` plus its live `link_count`; `create` / `update`
+  return a plain `Tag`; `delete` returns `DeleteTagResult { deleted }`. New
+  `TagSummary`, `ListTagsResult`, `CreateTagInput` (`new` + `with_color`),
+  `UpdateTagInput` (`new` + `with_name` / `with_color`), and `DeleteTagResult`
+  types, all re-exported from the crate root.
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

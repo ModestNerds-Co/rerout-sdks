@@ -83,10 +83,13 @@ fn base_url_rejects_unparseable_url() {
 #[test]
 fn namespaces_are_present() {
     let client = Rerout::new("rrk_x").unwrap();
-    // The namespace accessors return; reaching here means all three exist.
+    // The namespace accessors return; reaching here means they all exist.
     let _ = client.links();
     let _ = client.project();
     let _ = client.qr();
+    let _ = client.webhooks();
+    let _ = client.conversions();
+    let _ = client.tags();
 }
 
 #[test]

@@ -28,7 +28,7 @@
 //!
 //! # Namespaces
 //!
-//! The [`Rerout`] client exposes five namespaces:
+//! The [`Rerout`] client exposes six namespaces:
 //!
 //! - [`Rerout::links`] — create, batch-create, list, get, update, delete, and
 //!   per-link stats.
@@ -36,6 +36,7 @@
 //! - [`Rerout::qr`] — a pure QR URL builder plus an authenticated SVG fetch.
 //! - [`Rerout::webhooks`] — create, list, and delete webhook endpoints.
 //! - [`Rerout::conversions`] — record conversion events against clicks.
+//! - [`Rerout::tags`] — list, create, update, and delete project tags.
 //!
 //! # Error handling
 //!
@@ -60,6 +61,7 @@ mod links;
 mod models;
 mod project;
 mod qr;
+mod tags;
 mod webhooks_management;
 
 pub mod webhooks;
@@ -70,13 +72,14 @@ pub use error::{ApiErrorDetails, ReroutError, Result};
 pub use links::Links;
 pub use models::{
     AbVariant, BatchCreateLinksResult, BatchLinkInput, BatchLinkResult, ConversionResult,
-    CreateAbVariantInput, CreateLinkInput, CreateWebhookInput, CreatedWebhook, DailyClicksPoint,
-    DeleteLinkResult, DeleteWebhookResult, Link, LinkStats, ListLinksParams, ListLinksResult,
-    ListWebhooksResult, ProjectInfo, ProjectStats, QrEcc, QrOptions, QrRefresh,
-    RecordConversionInput, RoutingRule, StatsBreakdown, Tag, UpdateLinkInput, Webhook,
-    WebhookPayloadFormat,
+    CreateAbVariantInput, CreateLinkInput, CreateTagInput, CreateWebhookInput, CreatedWebhook,
+    DailyClicksPoint, DeleteLinkResult, DeleteTagResult, DeleteWebhookResult, Link, LinkStats,
+    ListLinksParams, ListLinksResult, ListTagsResult, ListWebhooksResult, ProjectInfo,
+    ProjectStats, QrEcc, QrOptions, QrRefresh, RecordConversionInput, RoutingRule, StatsBreakdown,
+    Tag, TagSummary, UpdateLinkInput, UpdateTagInput, Webhook, WebhookPayloadFormat,
 };
 pub use project::Project;
 pub use qr::{Qr, build_qr_url};
+pub use tags::Tags;
 pub use webhooks::{DEFAULT_TOLERANCE_SECONDS, verify_rerout_signature};
 pub use webhooks_management::Webhooks;

@@ -4,6 +4,18 @@ All notable changes to the `Rerout` .NET package are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Tag management via the `Tags` accessor — `ListAsync`, `CreateAsync`,
+  `UpdateAsync`, and `DeleteAsync` against `/v1/projects/me/tags` (API-key
+  auth). `ListAsync` returns `TagSummary` (`Id`, `Name`, `Color`, `LinkCount`);
+  `CreateAsync` / `UpdateAsync` return a plain `Tag`. New `TagSummary`,
+  `ListTagsResult`, `CreateTagInput`, and `UpdateTagInput` records. An empty
+  `UpdateTagInput` fails client-side with `empty_update` (mirrors
+  `Links.UpdateAsync`).
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

@@ -13,10 +13,12 @@
 import 'package:dio/dio.dart';
 import 'package:rerout/src/models/batch_create_links.dart';
 import 'package:rerout/src/models/create_link_request.dart';
+import 'package:rerout/src/models/create_tag_request.dart';
 import 'package:rerout/src/models/create_webhook_request.dart';
 import 'package:rerout/src/models/created_webhook.dart';
 import 'package:rerout/src/models/link_stats.dart';
 import 'package:rerout/src/models/list_links_result.dart';
+import 'package:rerout/src/models/list_tags_result.dart';
 import 'package:rerout/src/models/list_webhooks_result.dart';
 import 'package:rerout/src/models/project_stats.dart';
 import 'package:rerout/src/models/qr_options.dart';
@@ -25,7 +27,9 @@ import 'package:rerout/src/models/recorded_conversion.dart';
 import 'package:rerout/src/models/rerout_exception.dart';
 import 'package:rerout/src/models/result.dart';
 import 'package:rerout/src/models/short_link.dart';
+import 'package:rerout/src/models/tag.dart';
 import 'package:rerout/src/models/update_link_request.dart';
+import 'package:rerout/src/models/update_tag_request.dart';
 
 /// Default production API URL.
 const String kReroutDefaultBaseUrl = 'https://api.rerout.co';
@@ -67,6 +71,7 @@ class Rerout {
     qr = Qr._(this);
     webhooks = Webhooks._(this);
     conversions = Conversions._(this);
+    tags = Tags._(this);
   }
 
   /// Creates a new instance of the Rerout SDK.
@@ -121,6 +126,9 @@ class Rerout {
 
   /// Conversion tracking: record a conversion against a prior click.
   late final Conversions conversions;
+
+  /// Tag management: list, create, update, delete.
+  late final Tags tags;
 
   /// The resolved API base URL. Exposed for diagnostics and the QR helper.
   String get baseUrl => _baseUrl;
@@ -366,8 +374,7 @@ class Webhooks {
       method: 'POST',
       path: '/v1/projects/me/webhooks',
       body: request.toJson(),
-      parse: (data) =>
-          CreatedWebhook.fromJson(data as Map<String, dynamic>),
+      parse: (data) => CreatedWebhook.fromJson(data as Map<String, dynamic>),
     );
   }
 
@@ -412,6 +419,74 @@ class Conversions {
       body: request.toJson(),
       parse: (data) =>
           RecordedConversion.fromJson(data as Map<String, dynamic>),
+    );
+  }
+}
+
+/// Tag management namespace. Reached via [Rerout.tags].
+///
+/// Tags live under `/v1/projects/me/tags` (project resolved from the API key).
+/// `list` returns each tag with its live link count; `create`/`update` return a
+/// plain [Tag] without the count.
+class Tags {
+  Tags._(this._client);
+
+  final Rerout _client;
+
+  /// Lists the project's tags with their live link counts.
+  Future<Result<ListTagsResult>> list() {
+    return _client.request<ListTagsResult>(
+      method: 'GET',
+      path: '/v1/projects/me/tags',
+      parse: (data) => ListTagsResult.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Creates a tag. `color` is optional; the server validates it and defaults
+  /// it to `teal` when omitted.
+  Future<Result<Tag>> create(CreateTagRequest request) {
+    return _client.request<Tag>(
+      method: 'POST',
+      path: '/v1/projects/me/tags',
+      body: request.toJson(),
+      parse: (data) => Tag.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Patches a tag's name and/or color. Mirrors [Links.update]: only fields set
+  /// on [request] are sent, and a fully empty patch is rejected client-side.
+  Future<Result<Tag>> update(String tagId, UpdateTagRequest request) {
+    if (request.isEmpty) {
+      return Future.value(
+        Result.error(
+          ReroutException(
+            code: 'bad_request',
+            message: 'UpdateTagRequest has no fields to send.',
+            statusCode: 0,
+            path: '/v1/projects/me/tags/$tagId',
+          ),
+        ),
+      );
+    }
+    return _client.request<Tag>(
+      method: 'PATCH',
+      path: '/v1/projects/me/tags/${Uri.encodeComponent(tagId)}',
+      body: request.toJson(),
+      parse: (data) => Tag.fromJson(data as Map<String, dynamic>),
+    );
+  }
+
+  /// Deletes a tag and drops its assignments from all links.
+  Future<Result<bool>> delete(String tagId) {
+    return _client.request<bool>(
+      method: 'DELETE',
+      path: '/v1/projects/me/tags/${Uri.encodeComponent(tagId)}',
+      parse: (data) {
+        if (data is Map<String, dynamic>) {
+          return data['deleted'] as bool? ?? true;
+        }
+        return true;
+      },
     );
   }
 }

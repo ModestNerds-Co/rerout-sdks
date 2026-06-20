@@ -87,6 +87,9 @@ class ReroutTest {
         assertNotNull(rerout.links());
         assertNotNull(rerout.project());
         assertNotNull(rerout.qr());
+        assertNotNull(rerout.webhooks());
+        assertNotNull(rerout.conversions());
+        assertNotNull(rerout.tags());
     }
 
     @Test

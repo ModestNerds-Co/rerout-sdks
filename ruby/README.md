@@ -64,7 +64,8 @@ rerout = Rerout::Client.new(
 A blank or missing `api_key` raises `Rerout::Error` with code `missing_api_key`
 before any network call.
 
-The client exposes four namespaces: `links`, `project`, `qr`, and `webhooks`.
+The client exposes these namespaces: `links`, `project`, `qr`, `webhooks`,
+`conversions`, and `tags`.
 
 ## Links
 
@@ -175,6 +176,34 @@ result.duplicate # => false
 
 `value_cents` and `currency` are optional. The call is idempotent — a repeat
 for the same click + event returns `duplicate: true`.
+
+## Tags
+
+Manage the tags that can be attached to links for the project that owns the API
+key. (Links carry their tags read-only as `link.tags`; this namespace lets you
+list, create, update, and delete them.)
+
+```ruby
+# List — each tag carries its live (non-deleted) link count.
+result = rerout.tags.list
+result.tags # => [Rerout::Models::TagSummary, ...] — { id, name, color, link_count }
+result.tags.first.link_count # => 4
+
+# Create — name is required; color is optional (server defaults to "teal").
+tag = rerout.tags.create(Rerout::CreateTagInput.new(name: 'Spring 2026', color: 'teal'))
+tag # => Rerout::Models::Tag — { id, name, color }
+
+# Update — only the fields you set are sent; omitted fields are left unchanged.
+rerout.tags.update(tag.id, Rerout::UpdateTagInput.new(name: 'Renamed'))
+rerout.tags.update(tag.id, Rerout::UpdateTagInput.new(color: 'red'))
+
+# Delete — also drops the tag from every link it was attached to.
+rerout.tags.delete(tag.id) # => { "deleted" => true }
+```
+
+`CreateTagInput` and `UpdateTagInput` also accept plain Hashes. An
+`UpdateTagInput` with no fields set sends an empty body; the server rejects a
+fully empty patch with HTTP `400`.
 
 ## Project
 

@@ -70,8 +70,8 @@ await rerout.Links.StatsAsync("q4", days: 30);
 ```
 
 Every `Link` carries a read-only `Tags` list of `Tag` records (`Id`, `Name`,
-`Color`); it is empty when the link has no tags. Tags are assigned in the
-Rerout dashboard — the API ignores tag writes from API-key clients.
+`Color`); it is empty when the link has no tags. Manage the tag catalogue with
+the [`Tags`](#tags) namespace below.
 
 `UpdateLinkInput` uses `Optional<T>` to distinguish three states:
 
@@ -86,6 +86,40 @@ await rerout.Links.UpdateAsync("q4", update);
 ```
 
 An `UpdateLinkInput` with no fields set throws `ReroutException` with code
+`empty_update` — it never reaches the API.
+
+### Tags
+
+Manage the project's tag catalogue. The project is resolved from the API key,
+so no project id appears in the path.
+
+```csharp
+using Rerout.Models;
+
+// List tags with their live link counts.
+var list = await rerout.Tags.ListAsync();
+foreach (var tag in list.Tags)
+{
+    Console.WriteLine($"{tag.Name} ({tag.Color}) — {tag.LinkCount} links");
+}
+
+// Create a tag. Color is optional; the server defaults it to "teal".
+var created = await rerout.Tags.CreateAsync(new CreateTagInput
+{
+    Name = "Spring 2026",
+    // Color = "teal",
+});
+
+// Update a tag's name and/or color. Omitted fields are left unchanged.
+await rerout.Tags.UpdateAsync(created.Id, new UpdateTagInput { Color = "red" });
+
+// Delete a tag and drop its assignments from all links.
+await rerout.Tags.DeleteAsync(created.Id);
+```
+
+`ListAsync` returns a `TagSummary` (`Id`, `Name`, `Color`, `LinkCount`) per tag,
+while `CreateAsync` / `UpdateAsync` return a plain `Tag` (no link count). An
+`UpdateTagInput` with no fields set throws `ReroutException` with code
 `empty_update` — it never reaches the API.
 
 ### Project

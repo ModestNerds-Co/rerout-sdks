@@ -4,6 +4,26 @@ All notable changes to `rerout` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-20
+
+### Added
+
+- Tag management via a new `tags` namespace — `list`, `create`,
+  `update(tag_id, input)`, and `delete(tag_id)` against
+  `/v1/projects/me/tags` (API-key auth; project resolved from the key).
+- `TagSummary` dataclass (`id`, `name`, `color`, `link_count`) for the
+  `tags.list` response, and `ListTagsResult` wrapping it. The existing `Tag`
+  (`id`, `name`, `color`) is reused for the `create`/`update` responses, which
+  omit `link_count`.
+- `CreateTagInput` (`name` required, `color` optional — omitted unless set so
+  the server defaults to `teal`) and `UpdateTagInput` (`name`/`color`, both
+  using the `UNSET` sentinel; only set fields are sent). Mirrors
+  `links.update`'s "leave field alone" semantics but, like the TypeScript
+  reference, has no client-side empty-payload guard — the server returns `400`
+  for a fully empty patch.
+- New public exports: `Tags`, `TagSummary`, `ListTagsResult`, `CreateTagInput`,
+  `UpdateTagInput`.
+
 ## [0.4.0] - 2026-06-04
 
 ### Added
@@ -72,6 +92,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - PEP 561 marker (`py.typed`) — full type hints, mypy strict-clean.
 - Context-manager support on the client for deterministic teardown.
 
+[0.5.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python/v0.5.0
+[0.4.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python/v0.4.0
 [0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/python-v0.1.0

@@ -19,16 +19,20 @@ from ._models import (
     BatchCreateLinksResult,
     CreatedWebhook,
     CreateLinkInput,
+    CreateTagInput,
     CreateWebhookInput,
     Link,
     LinkStats,
     ListLinksResult,
+    ListTagsResult,
     ListWebhooksResult,
     ProjectInfo,
     ProjectStats,
     QrOptions,
     RecordedConversion,
+    Tag,
     UpdateLinkInput,
+    UpdateTagInput,
 )
 
 DEFAULT_BASE_URL = "https://api.rerout.co"
@@ -53,6 +57,7 @@ class Rerout:
     qr: Qr
     webhooks: Webhooks
     conversions: Conversions
+    tags: Tags
 
     def __init__(
         self,
@@ -96,6 +101,7 @@ class Rerout:
         self.qr = Qr(self)
         self.webhooks = Webhooks(self)
         self.conversions = Conversions(self)
+        self.tags = Tags(self)
 
     @property
     def base_url(self) -> str:
@@ -490,6 +496,70 @@ class Conversions:
             body["currency"] = currency
         data = self._client._request("POST", "/v1/conversions", body=body)
         return RecordedConversion.from_dict(_expect_dict(data))
+
+
+class Tags:
+    """Tag management: list, create, update, delete.
+
+    Operates on the project that owns the API key — the project is resolved
+    from the key, so no project id appears in the path.
+    """
+
+    def __init__(self, client: Rerout) -> None:
+        self._client = client
+
+    def list(self) -> ListTagsResult:
+        """List the project's tags with their live link counts.
+
+        Each tag in the result is a :class:`TagSummary` carrying ``link_count``
+        — the number of live (non-deleted) links the tag is attached to.
+        """
+        data = self._client._request(
+            "GET",
+            "/v1/projects/me/tags",
+        )
+        return ListTagsResult.from_dict(_expect_dict(data))
+
+    def create(self, input: CreateTagInput) -> Tag:
+        """Create a tag.
+
+        ``color`` is optional — the server validates it against its palette and
+        defaults to ``teal`` when omitted.
+        """
+        data = self._client._request(
+            "POST",
+            "/v1/projects/me/tags",
+            body=input.to_payload(),
+        )
+        return Tag.from_dict(_expect_dict(data))
+
+    def update(self, tag_id: str, input: UpdateTagInput) -> Tag:
+        """Update a tag's name and/or color.
+
+        Mirrors ``links.update``: only the fields set on ``input`` are sent and
+        omitted fields are left unchanged. Unlike ``links.update`` there is no
+        client-side empty-payload check — the server returns ``400`` for a
+        fully empty patch (matching the TypeScript reference).
+        """
+        data = self._client._request(
+            "PATCH",
+            f"/v1/projects/me/tags/{_encode_code(tag_id)}",
+            body=input.to_payload(),
+        )
+        return Tag.from_dict(_expect_dict(data))
+
+    def delete(self, tag_id: str) -> bool:
+        """Delete a tag. Returns ``True`` on success.
+
+        Deleting also drops the tag's assignments from every link server-side.
+        """
+        data = self._client._request(
+            "DELETE",
+            f"/v1/projects/me/tags/{_encode_code(tag_id)}",
+        )
+        if isinstance(data, dict):
+            return bool(data.get("deleted", True))
+        return True
 
 
 class Qr:

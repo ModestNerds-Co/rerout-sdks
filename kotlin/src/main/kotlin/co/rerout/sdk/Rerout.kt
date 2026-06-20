@@ -31,9 +31,9 @@ internal const val SDK_VERSION: String = "0.4.0"
 /**
  * Official client for the Rerout API.
  *
- * The client exposes five namespaces: [links], [project], [qr], [webhooks],
- * and [conversions]. All network calls are `suspend` functions and throw
- * [ReroutException] on any failure.
+ * The client exposes six namespaces: [links], [project], [qr], [webhooks],
+ * [tags], and [conversions]. All network calls are `suspend` functions and
+ * throw [ReroutException] on any failure.
  *
  * ## Usage
  *
@@ -65,6 +65,9 @@ public class Rerout private constructor(
 
     /** Webhook endpoint management: create, list, delete. */
     public val webhooks: Webhooks = Webhooks(transport)
+
+    /** Tag management: list, create, update, delete. */
+    public val tags: Tags = Tags(transport)
 
     /** Conversion tracking: record a conversion against a prior click. */
     public val conversions: Conversions = Conversions(transport)

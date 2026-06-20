@@ -125,10 +125,13 @@ class AbVariant:
 
 @dataclass(frozen=True, slots=True)
 class Tag:
-    """A tag attached to a link, as returned by the Rerout API.
+    """A tag, as returned by the Rerout API.
 
-    Tags are read-only for API-key clients: they appear on link responses but
-    cannot be written through ``CreateLinkInput`` / ``UpdateLinkInput``.
+    Tags appear on link responses (``Link.tags``) and are also managed through
+    the :class:`~rerout.Tags` namespace (``create`` / ``update``). The
+    create/update responses carry this plain shape (``id``/``name``/``color``);
+    the list response carries the richer :class:`TagSummary` with a link count.
+    Tags cannot be written through ``CreateLinkInput`` / ``UpdateLinkInput``.
     """
 
     id: str
@@ -143,6 +146,94 @@ class Tag:
             name=str(data["name"]),
             color=str(data["color"]),
         )
+
+
+@dataclass(frozen=True, slots=True)
+class TagSummary:
+    """A tag plus the number of live links it is attached to (list response).
+
+    Returned by ``GET /v1/projects/me/tags`` (``tags.list``). ``link_count`` is
+    the number of live (non-deleted) links the tag is attached to. The
+    create/update responses omit ``link_count`` and use the plain :class:`Tag`.
+    """
+
+    id: str
+    name: str
+    color: str
+    link_count: int
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> TagSummary:
+        """Build a ``TagSummary`` from the raw JSON dict the API returns."""
+        return cls(
+            id=str(data["id"]),
+            name=str(data["name"]),
+            color=str(data["color"]),
+            link_count=int(data.get("link_count", 0)),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ListTagsResult:
+    """Result of ``tags.list`` (``GET /v1/projects/me/tags``)."""
+
+    tags: tuple[TagSummary, ...]
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ListTagsResult:
+        return cls(
+            tags=tuple(TagSummary.from_dict(item) for item in data.get("tags", []) or []),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CreateTagInput:
+    """Request body for ``POST /v1/projects/me/tags``.
+
+    ``name`` is required. ``color`` is optional — when omitted the server
+    validates against its palette and defaults to ``teal``.
+    """
+
+    name: str
+    color: str | None = None
+
+    def to_payload(self) -> dict[str, Any]:
+        """Render as the JSON dict the API expects.
+
+        ``color`` is omitted from the payload unless explicitly set so the
+        server applies its default.
+        """
+        payload: dict[str, Any] = {"name": self.name}
+        if self.color is not None:
+            payload["color"] = self.color
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class UpdateTagInput:
+    """Request body for ``PATCH /v1/projects/me/tags/:tag_id``.
+
+    Both fields are optional and default to :data:`UNSET`. Only the fields you
+    set are forwarded; omitted fields are left unchanged server-side. Mirrors
+    ``links.update``'s "leave the field alone" semantics, but — like the
+    TypeScript reference — does **not** add a client-side empty-payload check:
+    the server returns ``400`` for a fully empty patch.
+    """
+
+    name: Maybe[str] = field(default=UNSET)
+    color: Maybe[str] = field(default=UNSET)
+
+    def to_payload(self) -> dict[str, Any]:
+        """Render as the JSON dict the API expects.
+
+        Fields left at :data:`UNSET` are omitted entirely.
+        """
+        payload: dict[str, Any] = {}
+        if not isinstance(self.name, _UnsetType):
+            payload["name"] = self.name
+        if not isinstance(self.color, _UnsetType):
+            payload["color"] = self.color
+        return payload
 
 
 @dataclass(frozen=True, slots=True)

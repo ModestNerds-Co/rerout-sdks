@@ -4,6 +4,17 @@ All notable changes to `rerout/sdk` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Tag management via a new `tags()` namespace — `list`, `create`, `update`, and
+  `delete` against `/v1/projects/me/tags` (API-key auth). `list()` returns a
+  `ListTagsResult` of `TagSummary` (each carrying `linkCount`); `create`/`update`
+  return a plain `Tag`. New request models `CreateTagInput` (required `name`,
+  optional `color`) and `UpdateTagInput` (optional `name`/`color`, rejects empty
+  payloads client-side).
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

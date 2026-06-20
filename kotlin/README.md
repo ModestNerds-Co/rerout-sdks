@@ -189,6 +189,34 @@ val result = rerout.webhooks.delete(created.endpoint.id)
 println(result.deleted)
 ```
 
+## Tags
+
+List, create, update, and delete the project's tags. All calls hit
+`/v1/projects/me/tags` and are API-key authenticated — the project is resolved
+from the key.
+
+```kotlin
+import co.rerout.sdk.CreateTagInput
+import co.rerout.sdk.UpdateTagInput
+
+// List — each tag carries its live link count.
+val tags = rerout.tags.list()
+for (tag in tags.tags) println("${tag.name} (${tag.color}) -> ${tag.linkCount} links")
+
+// Create — color is optional; the server defaults it to `teal`.
+val tag = rerout.tags.create(CreateTagInput(name = "Spring 2026", color = "teal"))
+println(tag.id)
+
+// Update — only the fields you set are sent; an empty patch is rejected
+// client-side.
+val renamed = rerout.tags.update(tag.id, UpdateTagInput(name = "Spring sale"))
+println(renamed.name)
+
+// Delete — also drops the tag from every link it was attached to.
+val result = rerout.tags.delete(tag.id)
+println(result.deleted)
+```
+
 ## Webhook signature verification
 
 Rerout signs every webhook delivery with an `X-Rerout-Signature` header in the

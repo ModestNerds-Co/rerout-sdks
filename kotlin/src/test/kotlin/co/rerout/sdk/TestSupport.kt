@@ -107,6 +107,25 @@ internal const val SAMPLE_WEBHOOK_JSON: String = """
 }
 """
 
+/** A sample tag JSON body (create/update shape) reused across tests. */
+internal const val SAMPLE_TAG_JSON: String = """
+{
+  "id": "tag_abc123",
+  "name": "Spring 2026",
+  "color": "teal"
+}
+"""
+
+/** A sample tag-summary JSON body (list shape, with link_count). */
+internal const val SAMPLE_TAG_SUMMARY_JSON: String = """
+{
+  "id": "tag_abc123",
+  "name": "Spring 2026",
+  "color": "teal",
+  "link_count": 4
+}
+"""
+
 /** A `MockResponse` carrying a JSON body and a 200 status. */
 internal fun jsonResponse(body: String, status: Int = 200): MockResponse =
     MockResponse()

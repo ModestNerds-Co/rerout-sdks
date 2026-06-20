@@ -13,8 +13,8 @@
  * {@link co.rerout.sdk.Rerout#create(String)} or
  * {@link co.rerout.sdk.Rerout#builder(String)}, then reach the
  * {@link co.rerout.sdk.Links}, {@link co.rerout.sdk.Project},
- * {@link co.rerout.sdk.Qr}, and {@link co.rerout.sdk.WebhookEndpoints}
- * namespaces.
+ * {@link co.rerout.sdk.Qr}, {@link co.rerout.sdk.WebhookEndpoints},
+ * {@link co.rerout.sdk.Conversions}, and {@link co.rerout.sdk.Tags} namespaces.
  *
  * <p>Every network operation ships in a blocking form (returns the value,
  * throws {@link co.rerout.sdk.ReroutException}) and an async form (returns a

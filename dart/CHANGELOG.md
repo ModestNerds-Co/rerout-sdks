@@ -3,6 +3,17 @@
 All notable changes to the `rerout` Dart package are documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- `tags` namespace — `tags.list()`, `tags.create(...)`, `tags.update(tagId,
+  ...)`, and `tags.delete(tagId)` against `/v1/projects/me/tags` (API-key auth).
+  `list` returns a `TagSummary` per tag (`Tag` plus `linkCount`); `create` /
+  `update` return a plain `Tag`. New `CreateTagRequest`, `UpdateTagRequest`,
+  `TagSummary`, and `ListTagsResult` models. `update` mirrors `links.update`:
+  only set fields are sent and an empty patch is rejected client-side.
+
 ## 0.4.0 - 2026-06-04
 
 ### Added

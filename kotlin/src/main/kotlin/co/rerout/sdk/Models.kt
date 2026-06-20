@@ -11,20 +11,80 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * A tag attached to a [Link].
+ * A tag, as it appears on a [Link] and in `create`/`update` responses.
  *
- * Tags are read-only for API-key clients: they surface on link responses but
- * cannot be written through `create`/`update`.
+ * Manage tags through the [Tags] namespace (reached via [Rerout.tags]). The
+ * list endpoint returns the richer [TagSummary] shape, which adds a live
+ * `link_count`.
  */
 @Serializable
 public data class Tag(
-    /** Tag identifier. */
+    /** Tag identifier — `tag_…`. */
     val id: String,
     /** Human-readable tag name. */
     val name: String,
-    /** Display color — typically a hex string such as `#3b82f6`. */
+    /** Display color — a palette name such as `teal`, or a hex string. */
     val color: String,
 )
+
+/**
+ * A [Tag] enriched with its live link count, as returned by `tags.list`.
+ *
+ * [linkCount] is the number of non-deleted links the tag is currently attached
+ * to. Only the list endpoint returns this field; `create`/`update` responses
+ * are plain [Tag]s.
+ */
+@Serializable
+public data class TagSummary(
+    /** Tag identifier — `tag_…`. */
+    val id: String,
+    /** Human-readable tag name. */
+    val name: String,
+    /** Display color — a palette name such as `teal`, or a hex string. */
+    val color: String,
+    /** Number of live (non-deleted) links this tag is attached to. */
+    @SerialName("link_count") val linkCount: Int = 0,
+)
+
+/** A list of the project's tags with their live link counts. */
+@Serializable
+public data class ListTagsResult(
+    /** The project's tags, each with a [TagSummary.linkCount]. */
+    val tags: List<TagSummary> = emptyList(),
+)
+
+/**
+ * Request body for creating a tag.
+ *
+ * Only [name] is required. [color] is omitted from the JSON when left `null`,
+ * so the server applies its default (`teal`).
+ */
+@Serializable
+public data class CreateTagInput(
+    /** Tag label. Required. */
+    val name: String,
+    /** Display color. Optional — server validates against its palette and defaults to `teal`. */
+    val color: String? = null,
+)
+
+/**
+ * Request body for the `PATCH /v1/projects/me/tags/:tag_id` endpoint.
+ *
+ * Both fields are optional; an unset field is omitted from the JSON and left
+ * unchanged server-side. There is no "clear" semantics — the server keeps a
+ * non-empty name and color at all times. An entirely empty patch is rejected
+ * client-side, mirroring [UpdateLinkInput].
+ */
+@Serializable
+public data class UpdateTagInput(
+    /** New tag name, or `null` to leave unchanged. */
+    val name: String? = null,
+    /** New display color, or `null` to leave unchanged. */
+    val color: String? = null,
+) {
+    /** True when no field is set — the API would reject this as a no-op. */
+    val isEmpty: Boolean get() = name == null && color == null
+}
 
 /**
  * A geo/device routing rule (Smart Links).

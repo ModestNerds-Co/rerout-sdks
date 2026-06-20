@@ -12,12 +12,72 @@ import (
 	"strconv"
 )
 
-// Tag is a label attached to a link. Tags are read-only via the API-key
-// client — they are returned in link responses but cannot be written.
+// Tag is a label attached to a link. Returned in link responses and as the
+// body of Tags.Create / Tags.Update.
 type Tag struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Color string `json:"color"`
+}
+
+// TagSummary is a Tag plus the number of live (non-deleted) links it is
+// attached to. Returned by Tags.List — the create/update responses use the
+// plain Tag shape and omit LinkCount.
+type TagSummary struct {
+	Tag
+	LinkCount int64 `json:"link_count"`
+}
+
+// ListTagsResult is the response from GET /v1/projects/me/tags.
+type ListTagsResult struct {
+	Tags []TagSummary `json:"tags"`
+}
+
+// CreateTagInput is the body for POST /v1/projects/me/tags.
+//
+// Name is required. Color is optional — pointer so the JSON encoder omits it
+// when unset, letting the server validate against its palette and default to
+// "teal".
+//
+//	in := rerout.CreateTagInput{
+//	    Name:  "Spring 2026",
+//	    Color: rerout.String("teal"),
+//	}
+type CreateTagInput struct {
+	Name  string  `json:"name"`
+	Color *string `json:"color,omitempty"`
+}
+
+// UpdateTagInput is the body for PATCH /v1/projects/me/tags/:tag_id.
+//
+// Both fields are optional. A nil field is omitted from the request so the
+// server leaves it unchanged; only fields you set are forwarded. This mirrors
+// Links.Update: an empty payload is a client-side error — Tags.Update rejects
+// it without hitting the API (the server would otherwise return 400).
+//
+//	rerout.UpdateTagInput{Color: rerout.String("red")} // sends {"color":"red"}
+type UpdateTagInput struct {
+	Name  *string `json:"-"`
+	Color *string `json:"-"`
+}
+
+// MarshalJSON implements json.Marshaler for UpdateTagInput, emitting only the
+// fields that are set so omitted fields are left unchanged server-side.
+func (u UpdateTagInput) MarshalJSON() ([]byte, error) {
+	out := make(map[string]any, 2)
+	if u.Name != nil {
+		out["name"] = *u.Name
+	}
+	if u.Color != nil {
+		out["color"] = *u.Color
+	}
+	return json.Marshal(out)
+}
+
+// IsEmpty reports whether no field is set. Sending an empty PATCH is a
+// client-side error.
+func (u UpdateTagInput) IsEmpty() bool {
+	return u.Name == nil && u.Color == nil
 }
 
 // RoutingRule is one Smart-Links conditional redirect. When the inbound

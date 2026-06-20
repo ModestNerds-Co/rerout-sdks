@@ -112,7 +112,8 @@ An empty `UpdateLinkInput` is rejected client-side — `links().update` returns 
 
 Each returned `Link` carries a read-only `tags` field — a `Vec<Tag>` where every
 `Tag` has an `id`, `name`, and `color`. It is empty on `create` and populated by
-`get`, `list`, and `update`. Tag writes are ignored for API-key clients.
+`get`, `list`, and `update`. Manage the tags themselves via the `tags()`
+namespace (below).
 
 ### Project
 
@@ -175,6 +176,39 @@ let list = rerout.webhooks().list().await?;
 println!("{} endpoint(s)", list.endpoints.len());
 
 let removed = rerout.webhooks().delete(&endpoint_id).await?;
+assert!(removed.deleted);
+# Ok(())
+# }
+```
+
+### Tags
+
+Manage the project's tags via `tags()`. This is the API-key-authenticated
+surface under `/v1/projects/me/tags` — the project is resolved from the key.
+
+```rust,no_run
+# use rerout::{CreateTagInput, Rerout, UpdateTagInput};
+# async fn run(rerout: Rerout) -> Result<(), rerout::ReroutError> {
+// List tags with their live link counts.
+let list = rerout.tags().list().await?;
+for summary in &list.tags {
+    println!("{} ({} links)", summary.tag.name, summary.link_count);
+}
+
+// Create a tag — color is optional and defaults to `teal` server-side.
+let tag = rerout
+    .tags()
+    .create(&CreateTagInput::new("Spring 2026").with_color("teal"))
+    .await?;
+
+// Update — omitted fields are left unchanged.
+let renamed = rerout
+    .tags()
+    .update(&tag.id, &UpdateTagInput::new().with_name("Renamed"))
+    .await?;
+
+// Delete — also drops the tag's assignments from all links.
+let removed = rerout.tags().delete(&renamed.id).await?;
 assert!(removed.deleted);
 # Ok(())
 # }

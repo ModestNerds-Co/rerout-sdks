@@ -190,6 +190,37 @@ time. The default timestamp tolerance is 300 seconds — pass
 `toleranceSeconds: 0` to disable the staleness check, or a custom value to
 widen it. A `$clock` callable can be injected for testing.
 
+### Tags
+
+Manage the project's tags with an API key. The project is resolved from the
+key — there is no project id in the path. `list()` is the only call that
+returns each tag's `linkCount` (live, non-deleted links the tag is attached
+to); `create`/`update` return a plain `Tag` without it.
+
+```php
+use Rerout\Models\CreateTagInput;
+use Rerout\Models\UpdateTagInput;
+
+// List tags with their link counts.
+$result = $rerout->tags()->list();
+foreach ($result->tags as $tag) {
+    echo "{$tag->name} ({$tag->linkCount} links)", PHP_EOL;
+}
+
+// Create a tag. `color` is optional — the server defaults it to 'teal'.
+$tag = $rerout->tags()->create(new CreateTagInput(
+    name: 'Spring 2026',
+    color: 'teal', // optional
+));
+echo $tag->id; // tag_…
+
+// Update a tag. Only the fields you set are sent; an empty input throws.
+$tag = $rerout->tags()->update('tag_abc123', new UpdateTagInput(color: 'red'));
+
+// Delete a tag (also drops its link assignments).
+$deleted = $rerout->tags()->delete('tag_abc123'); // bool
+```
+
 ### Error handling
 
 Every API call throws `Rerout\Exceptions\ReroutException` on failure:

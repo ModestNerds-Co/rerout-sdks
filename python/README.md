@@ -78,8 +78,9 @@ rerout.links.stats(code, days=30)
 
 Every `Link` carries a read-only `tags` tuple — each `Tag` has an `id`,
 `name`, and `color`. Tags are populated on `get`, `list`, and `update`
-responses (empty on `create`), and cannot be written through the SDK; the
-API ignores tag writes for API-key clients.
+responses (empty on `create`). Tags themselves are managed through the
+[`tags`](#tags) namespace below; they cannot be attached/detached through
+`CreateLinkInput` / `UpdateLinkInput`.
 
 ```python
 link = rerout.links.get("q4")
@@ -170,6 +171,35 @@ print(result.recorded, result.duplicate)
 
 `value_cents` and `currency` are optional. The call is idempotent — a repeat
 for the same click + event returns `duplicate=True`.
+
+### Tags
+
+List, create, update, and delete the project's tags. The project is resolved
+from the API key, so no project id appears in the path.
+
+```python
+from rerout import CreateTagInput, UpdateTagInput
+
+# List tags with their live link counts
+result = rerout.tags.list()
+for tag in result.tags:
+    print(tag.id, tag.name, tag.color, tag.link_count)  # TagSummary
+
+# Create a tag — color is optional (server defaults to "teal")
+tag = rerout.tags.create(CreateTagInput(name="Spring 2026", color="teal"))
+
+# Update name and/or color — only the fields you set are sent
+rerout.tags.update(tag.id, UpdateTagInput(color="red"))
+
+# Delete a tag — also drops its assignments from every link
+rerout.tags.delete(tag.id)  # -> True
+```
+
+`tags.list` returns `TagSummary` objects (`id`, `name`, `color`, `link_count`);
+`create`/`update` return a plain `Tag` (no `link_count`). Like `links.update`,
+omitted `UpdateTagInput` fields are left unchanged — but there is no
+client-side empty-payload guard: the server returns `400` for a fully empty
+patch.
 
 ### Project
 

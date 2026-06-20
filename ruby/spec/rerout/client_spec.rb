@@ -49,6 +49,10 @@ RSpec.describe Rerout::Client do
     it 'exposes the conversions namespace' do
       expect(described_class.new(api_key: 'rrk_test').conversions).to be_a(Rerout::Resources::Conversions)
     end
+
+    it 'exposes the tags namespace' do
+      expect(described_class.new(api_key: 'rrk_test').tags).to be_a(Rerout::Resources::Tags)
+    end
   end
 
   describe 'request transport' do

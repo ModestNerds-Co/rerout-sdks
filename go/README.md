@@ -178,6 +178,37 @@ This is distinct from the inbound signature helper below — `Webhooks()` manage
 the endpoints you register, while `VerifySignature` validates the deliveries
 the server sends to them.
 
+### Tags
+
+`client.Tags()` manages the project's tags over the `/v1/projects/me/tags`
+surface. The project is resolved from the API key, so there is no project id in
+the path.
+
+```go
+ctx := context.Background()
+
+// List returns each tag with its live link count.
+tags, err := client.Tags().List(ctx)
+// tags.Tags[i].LinkCount is the number of non-deleted links the tag is on.
+
+// Create — Name required; Color optional (server defaults it when omitted).
+tag, err := client.Tags().Create(ctx, rerout.CreateTagInput{
+	Name:  "Spring 2026",
+	Color: rerout.String("teal"),
+})
+
+// Update — only the fields you set are sent; omitted fields are unchanged.
+// An empty UpdateTagInput is rejected client-side and never hits the API.
+tag, err = client.Tags().Update(ctx, tag.ID, rerout.UpdateTagInput{
+	Color: rerout.String("red"),
+})
+
+result, err := client.Tags().Delete(ctx, tag.ID) // result.Deleted; drops link assignments
+```
+
+`Create`/`Update` return a plain `Tag` (`ID`, `Name`, `Color`); `List` returns
+`TagSummary` values, which add `LinkCount`.
+
 ### Webhook signature verification
 
 `VerifySignature` is a standalone helper — it needs no client:

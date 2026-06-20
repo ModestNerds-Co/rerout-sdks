@@ -18,6 +18,7 @@ use Rerout\Resources\Conversions;
 use Rerout\Resources\Links;
 use Rerout\Resources\Project;
 use Rerout\Resources\Qr;
+use Rerout\Resources\Tags;
 use Rerout\Resources\Webhooks;
 
 /**
@@ -67,6 +68,7 @@ final class Rerout
     private readonly Project $project;
     private readonly Qr $qr;
     private readonly Webhooks $webhooks;
+    private readonly Tags $tags;
     private readonly Conversions $conversions;
 
     /**
@@ -97,6 +99,7 @@ final class Rerout
         $this->project = new Project($this);
         $this->qr = new Qr($this);
         $this->webhooks = new Webhooks($this);
+        $this->tags = new Tags($this);
         $this->conversions = new Conversions($this);
     }
 
@@ -122,6 +125,12 @@ final class Rerout
     public function webhooks(): Webhooks
     {
         return $this->webhooks;
+    }
+
+    /** Tag management: list, create, update, delete. */
+    public function tags(): Tags
+    {
+        return $this->tags;
     }
 
     /** Conversion tracking: record conversion events against a click. */

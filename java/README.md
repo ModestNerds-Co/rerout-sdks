@@ -237,6 +237,43 @@ DeleteResult result = rerout.webhooks().delete(endpoint.getId());
 System.out.println(result.isDeleted());
 ```
 
+## Tags
+
+Manage the project's tags via `rerout.tags()`. These operations hit
+`/v1/projects/me/tags` and are API-key authenticated. `list()` returns each tag
+with its live link count; `create()` and `update()` return a plain `Tag`. Each
+operation ships in a blocking and an `…Async` form.
+
+```java
+import co.rerout.sdk.model.CreateTagInput;
+import co.rerout.sdk.model.ListTagsResult;
+import co.rerout.sdk.model.Tag;
+import co.rerout.sdk.model.TagSummary;
+import co.rerout.sdk.model.UpdateTagInput;
+import co.rerout.sdk.model.DeleteResult;
+
+// List — every tag on the project, each with the number of live links it tags.
+ListTagsResult tags = rerout.tags().list();
+for (TagSummary tag : tags.getTags()) {
+    System.out.println(tag.getName() + " (" + tag.getColor() + ") → "
+        + tag.getLinkCount() + " links");
+}
+
+// Create — color is optional; the server defaults it to "teal".
+Tag created = rerout.tags().create(
+    CreateTagInput.builder("Spring 2026").color("teal").build());
+
+// Update — only the fields you set are sent; an unset field is left unchanged.
+// An empty patch is rejected client-side (code `bad_request`) without hitting
+// the API.
+Tag renamed = rerout.tags().update(created.getId(),
+    UpdateTagInput.builder().name("Spring Sale").color("red").build());
+
+// Delete — also drops the tag's assignments from every link.
+DeleteResult result = rerout.tags().delete(created.getId());
+System.out.println(result.isDeleted());
+```
+
 ## Webhook signature verification
 
 Rerout signs every webhook delivery with an `X-Rerout-Signature` header in the

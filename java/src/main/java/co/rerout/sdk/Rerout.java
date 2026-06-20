@@ -22,9 +22,9 @@ import java.time.Duration;
 /**
  * Official client for the Rerout API.
  *
- * <p>The client exposes five namespaces — {@link #links()}, {@link #project()},
- * {@link #qr()}, {@link #webhooks()}, and {@link #conversions()}. Every network
- * operation ships in two forms:
+ * <p>The client exposes six namespaces — {@link #links()}, {@link #project()},
+ * {@link #qr()}, {@link #webhooks()}, {@link #conversions()}, and
+ * {@link #tags()}. Every network operation ships in two forms:
  *
  * <ul>
  *   <li>a <strong>blocking</strong> method (for example {@code links().create(…)})
@@ -78,6 +78,7 @@ public final class Rerout {
     private final Qr qr;
     private final WebhookEndpoints webhooks;
     private final Conversions conversions;
+    private final Tags tags;
 
     private Rerout(Builder b) {
         if (b.apiKey == null || b.apiKey.trim().isEmpty()) {
@@ -115,6 +116,7 @@ public final class Rerout {
         this.qr = new Qr(transport, resolved);
         this.webhooks = new WebhookEndpoints(transport);
         this.conversions = new Conversions(transport);
+        this.tags = new Tags(transport);
     }
 
     /**
@@ -174,6 +176,11 @@ public final class Rerout {
     /** {@return the conversion tracking namespace — record conversion events} */
     public Conversions conversions() {
         return conversions;
+    }
+
+    /** {@return the tag management namespace — list, create, update, delete} */
+    public Tags tags() {
+        return tags;
     }
 
     /**

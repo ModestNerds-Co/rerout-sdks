@@ -5,6 +5,17 @@ format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- New `Tags` namespace via `Client.Tags()` over the `/v1/projects/me/tags`
+  surface: `List` (returns `TagSummary` values with `LinkCount`), `Create`
+  (`CreateTagInput{Name, Color}` → `Tag`), `Update(tagID, UpdateTagInput{Name,
+  Color})` (forwards only set fields; empty input is a client-side error), and
+  `Delete(tagID)` (`{Deleted}`). Added `TagSummary`, `ListTagsResult`,
+  `CreateTagInput`, and `UpdateTagInput` types.
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

@@ -13,6 +13,7 @@ use crate::error::{ReroutError, Result, build_api_error};
 use crate::links::Links;
 use crate::project::Project;
 use crate::qr::Qr;
+use crate::tags::Tags;
 use crate::webhooks_management::Webhooks;
 
 /// Default production API base URL.
@@ -213,6 +214,11 @@ impl Rerout {
     /// Access the conversion-tracking namespace — record conversion events.
     pub fn conversions(&self) -> Conversions<'_> {
         Conversions::new(self)
+    }
+
+    /// Access the tag management namespace — list, create, update, delete.
+    pub fn tags(&self) -> Tags<'_> {
+        Tags::new(self)
     }
 
     /// The resolved base URL — trailing slashes trimmed.

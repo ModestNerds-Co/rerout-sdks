@@ -86,6 +86,21 @@ rerout.webhooks.delete('whk_...');
 Webhooks are managed against `/v1/projects/me/webhooks` using API-key auth. The
 signing secret returned by `create` is shown once — store it securely.
 
+### Tags
+
+```dart
+rerout.tags.list();                                            // each tag carries its live `linkCount`
+rerout.tags.create(const CreateTagRequest(name: 'Spring 2026', color: 'teal'));
+rerout.tags.update('tag_abc123', const UpdateTagRequest(color: 'red'));
+rerout.tags.delete('tag_abc123');
+```
+
+Tags are managed against `/v1/projects/me/tags` using API-key auth. `list`
+returns a `TagSummary` per tag (a `Tag` plus `linkCount`); `create`/`update`
+return a plain `Tag`. `color` is optional on create — the server defaults it to
+`teal`. On `update`, omitted fields are left unchanged and an empty patch is
+rejected before any request is sent.
+
 ### Webhook signatures
 
 ```dart

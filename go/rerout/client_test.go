@@ -85,6 +85,9 @@ func TestNewClient_NamespacesNonNil(t *testing.T) {
 	if c.QR() == nil {
 		t.Error("QR() is nil")
 	}
+	if c.Tags() == nil {
+		t.Error("Tags() is nil")
+	}
 }
 
 func TestNewClient_DefaultBaseURL(t *testing.T) {

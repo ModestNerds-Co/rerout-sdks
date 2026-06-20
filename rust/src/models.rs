@@ -7,16 +7,117 @@ use serde::{Deserialize, Serialize};
 
 // ─── Tag ────────────────────────────────────────────────────────────────────
 
-/// A label attached to a [`Link`]. Read-only — tag writes are ignored for
-/// API-key clients.
+/// A label attached to a [`Link`]. Returned by tag writes
+/// ([`crate::Tags::create`] / [`crate::Tags::update`]) and embedded in a
+/// [`Link`]'s `tags`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Tag {
     /// Tag ID.
     pub id: String,
     /// Display name.
     pub name: String,
-    /// Hex color (e.g. `#3b82f6`).
+    /// Color — a palette name (e.g. `teal`) or hex value.
     pub color: String,
+}
+
+/// A [`Tag`] plus its live link count — the shape returned by
+/// [`crate::Tags::list`].
+///
+/// `link_count` is the number of live (non-deleted) links the tag is attached
+/// to. The flattened `tag` carries the `id` / `name` / `color`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TagSummary {
+    /// The underlying tag — `id`, `name`, `color`.
+    #[serde(flatten)]
+    pub tag: Tag,
+    /// Number of live links this tag is attached to.
+    #[serde(default)]
+    pub link_count: i64,
+}
+
+/// Response body for `GET /v1/projects/me/tags`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ListTagsResult {
+    /// The project's tags, each with its live link count.
+    #[serde(default)]
+    pub tags: Vec<TagSummary>,
+}
+
+/// Body for `POST /v1/projects/me/tags`.
+///
+/// `name` is required. `color` is optional and only sent when `Some` — the
+/// server validates it against its palette and defaults to `teal`. Use
+/// [`CreateTagInput::new`] for the minimal happy path.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct CreateTagInput {
+    /// Tag label.
+    pub name: String,
+    /// Tag color. Server validates against its palette; defaults to `teal`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color: Option<String>,
+}
+
+impl CreateTagInput {
+    /// Build the minimal input: just a name.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            color: None,
+        }
+    }
+
+    /// Builder — set the tag color.
+    #[must_use]
+    pub fn with_color(mut self, color: impl Into<String>) -> Self {
+        self.color = Some(color.into());
+        self
+    }
+}
+
+/// Body for `PATCH /v1/projects/me/tags/:tag_id`.
+///
+/// Both fields are optional and only sent when `Some` — an omitted field is
+/// left unchanged. Mirrors the TypeScript reference: there is **no** client-side
+/// empty-payload check (a tag cannot be cleared to null, so the
+/// `Option<Option<T>>` pattern from [`UpdateLinkInput`] does not apply); the
+/// server returns `400` for a fully empty patch.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct UpdateTagInput {
+    /// New display name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// New color.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub color: Option<String>,
+}
+
+impl UpdateTagInput {
+    /// Create an empty patch — populate via the `with_*` builders.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Builder — set a new display name.
+    #[must_use]
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = Some(name.into());
+        self
+    }
+
+    /// Builder — set a new color.
+    #[must_use]
+    pub fn with_color(mut self, color: impl Into<String>) -> Self {
+        self.color = Some(color.into());
+        self
+    }
+}
+
+/// Response body for `DELETE /v1/projects/me/tags/:tag_id`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DeleteTagResult {
+    /// Whether the delete succeeded.
+    #[serde(default)]
+    pub deleted: bool,
 }
 
 // ─── Smart Links ──────────────────────────────────────────────────────────

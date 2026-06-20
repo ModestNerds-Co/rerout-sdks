@@ -4,6 +4,21 @@ All notable changes to the `rerout` gem are documented in this file. The
 format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- New `tags` namespace for tag management — `client.tags.list`, `create`,
+  `update(tag_id, input)`, and `delete(tag_id)` against `/v1/projects/me/tags`
+  (API-key auth; project resolved from the key).
+- `Rerout::CreateTagInput` (required `name`, optional `color`) and
+  `Rerout::UpdateTagInput` (both fields optional; omitted fields are left
+  unchanged, no client-side empty-payload check) request bodies. Both also
+  accept a plain Hash.
+- New value models `Rerout::Models::TagSummary` (`Tag` plus `link_count`, the
+  list-response shape) and `Rerout::Models::ListTagsResult`. `tags.create` /
+  `tags.update` return the existing `Rerout::Models::Tag` (`{ id, name, color }`).
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

@@ -50,6 +50,7 @@ type Client struct {
 	qr          *QR
 	webhooks    *Webhooks
 	conversions *Conversions
+	tags        *Tags
 }
 
 // Option configures a Client at construction time. See WithBaseURL,
@@ -143,6 +144,7 @@ func NewClient(apiKey string, opts ...Option) (*Client, error) {
 	c.qr = &QR{client: c}
 	c.webhooks = &Webhooks{client: c}
 	c.conversions = &Conversions{client: c}
+	c.tags = &Tags{client: c}
 	return c, nil
 }
 
@@ -160,6 +162,9 @@ func (c *Client) Webhooks() *Webhooks { return c.webhooks }
 
 // Conversions returns the conversion-tracking namespace.
 func (c *Client) Conversions() *Conversions { return c.conversions }
+
+// Tags returns the tag-management namespace.
+func (c *Client) Tags() *Tags { return c.tags }
 
 // BaseURL returns the resolved base URL — trailing-slash-trimmed. Exposed for
 // diagnostics and the QR URL builder.

@@ -35,6 +35,70 @@ module Rerout
       end
     end
 
+    # A tag with the number of live (non-deleted) links it is attached to —
+    # `{ id:, name:, color:, link_count: }`. Returned by `tags.list`; the
+    # create/update responses use the plain {Tag} (no `link_count`).
+    class TagSummary
+      attr_reader :id, :name, :color, :link_count
+
+      def initialize(id:, name:, color:, link_count:)
+        @id = id
+        @name = name
+        @color = color
+        @link_count = link_count
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(
+          id: hash['id'],
+          name: hash['name'],
+          color: hash['color'],
+          link_count: hash.fetch('link_count', 0)
+        )
+      end
+
+      def to_h
+        { id: id, name: name, color: color, link_count: link_count }
+      end
+
+      def ==(other)
+        other.is_a?(TagSummary) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        [self.class, id, name, color, link_count].hash
+      end
+    end
+
+    # Result of `tags.list` — the project's tags with their live link counts.
+    class ListTagsResult
+      attr_reader :tags
+
+      def initialize(tags:)
+        @tags = tags.freeze
+        freeze
+      end
+
+      def self.from_hash(hash)
+        new(tags: (hash['tags'] || []).map { |t| TagSummary.from_hash(t) })
+      end
+
+      def to_h
+        { tags: tags.map(&:to_h) }
+      end
+
+      def ==(other)
+        other.is_a?(ListTagsResult) && other.to_h == to_h
+      end
+      alias eql? ==
+
+      def hash
+        to_h.hash
+      end
+    end
+
     # A Smart Link routing rule — send matching visitors to `target_url`.
     # `condition_type` is `"country"` or `"device"`; `condition_op` is `"is"`,
     # `"is_not"`, or `"in"`; `condition_value` is the value to compare against

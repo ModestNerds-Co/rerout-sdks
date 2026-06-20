@@ -24,6 +24,7 @@ from ._client import (
     Project,
     Qr,
     Rerout,
+    Tags,
     Webhooks,
 )
 from ._errors import ReroutError
@@ -36,12 +37,14 @@ from ._models import (
     ConditionType,
     CreatedWebhook,
     CreateLinkInput,
+    CreateTagInput,
     CreateWebhookInput,
     DailyClicksPoint,
     EccLevel,
     Link,
     LinkStats,
     ListLinksResult,
+    ListTagsResult,
     ListWebhooksResult,
     ProjectInfo,
     ProjectStats,
@@ -50,7 +53,9 @@ from ._models import (
     RoutingRule,
     StatsBreakdown,
     Tag,
+    TagSummary,
     UpdateLinkInput,
+    UpdateTagInput,
     Webhook,
     WebhookPayloadFormat,
 )
@@ -59,7 +64,7 @@ from ._webhooks import (
     verify_rerout_signature,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "DEFAULT_BASE_URL",
@@ -72,6 +77,7 @@ __all__ = [
     "ConditionType",
     "Conversions",
     "CreateLinkInput",
+    "CreateTagInput",
     "CreateWebhookInput",
     "CreatedWebhook",
     "DailyClicksPoint",
@@ -80,6 +86,7 @@ __all__ = [
     "LinkStats",
     "Links",
     "ListLinksResult",
+    "ListTagsResult",
     "ListWebhooksResult",
     "Project",
     "ProjectInfo",
@@ -92,7 +99,10 @@ __all__ = [
     "RoutingRule",
     "StatsBreakdown",
     "Tag",
+    "TagSummary",
+    "Tags",
     "UpdateLinkInput",
+    "UpdateTagInput",
     "Webhook",
     "WebhookPayloadFormat",
     "Webhooks",

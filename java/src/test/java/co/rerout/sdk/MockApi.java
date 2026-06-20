@@ -344,6 +344,15 @@ final class MockApi implements AutoCloseable {
             + "{\"id\":2,\"target_url\":\"https://example.com/b\",\"weight\":30}]"
             + "}";
 
+    /** A sample tag JSON body (create/update shape — no link count). */
+    static final String SAMPLE_TAG_JSON =
+            "{\"id\":\"tag_abc123\",\"name\":\"Spring 2026\",\"color\":\"teal\"}";
+
+    /** A sample tag summary JSON body (list shape — carries {@code link_count}). */
+    static final String SAMPLE_TAG_SUMMARY_JSON =
+            "{\"id\":\"tag_abc123\",\"name\":\"Spring 2026\","
+            + "\"color\":\"teal\",\"link_count\":4}";
+
     /** A sample batch-create result with one success and one failure. */
     static final String SAMPLE_BATCH_RESULT_JSON =
             "{"
