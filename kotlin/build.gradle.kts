@@ -57,7 +57,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("co.rerout", "rerout-kotlin", "0.3.0")
+    coordinates("co.rerout", "rerout-kotlin", "0.5.0")
 
     pom {
         name.set("Rerout Kotlin SDK")

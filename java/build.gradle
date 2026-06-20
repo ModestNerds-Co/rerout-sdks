@@ -58,7 +58,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, true)
     signAllPublications()
 
-    coordinates('co.rerout', 'rerout-java', '0.4.0')
+    coordinates('co.rerout', 'rerout-java', '0.5.0')
 
     pom {
         name = 'Rerout Java SDK'
