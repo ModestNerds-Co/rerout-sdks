@@ -5,6 +5,17 @@ this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-20
+
+### Added
+
+- Tag management via `rerout.tags` — `list()` (each tag carries its live
+  `linkCount`), `create(input)`, `update(tagId, input)`, and `delete(tagId)`
+  against `/v1/projects/me/tags` (API-key auth). `create`/`update` return a
+  plain `Tag`. New `TagSummary`, `ListTagsResult`, `CreateTagInput`, and
+  `UpdateTagInput` types. `update` forwards only the fields you set and rejects
+  an empty patch client-side, matching `links.update`.
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

@@ -6,7 +6,7 @@
     <AssemblyName>Rerout</AssemblyName>
 
     <PackageId>Rerout</PackageId>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <PackageVersion>0.4.0</PackageVersion>
     <Description>Official .NET SDK for the Rerout branded-link API. Create short links, render QR codes, read analytics, and verify webhook signatures.</Description>
     <PackageTags>rerout;short-links;urls;qr;analytics;sdk</PackageTags>

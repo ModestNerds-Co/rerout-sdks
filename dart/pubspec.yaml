@@ -1,6 +1,6 @@
 name: rerout
 description: Official Dart SDK for the Rerout branded-link API.
-version: 0.4.0
+version: 0.5.0
 homepage: https://rerout.co
 repository: https://github.com/ModestNerds-Co/rerout-sdks
 issue_tracker: https://github.com/ModestNerds-Co/rerout-sdks/issues
