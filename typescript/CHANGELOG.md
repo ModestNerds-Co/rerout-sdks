@@ -4,6 +4,16 @@ All notable changes to `@rerout/sdk` are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-20
+
+### Added
+
+- `tags` namespace for tag management — `tags.list()` (returns each tag with its
+  `link_count`), `tags.create({ name, color? })`, `tags.update(tagId, { name?, color? })`,
+  and `tags.delete(tagId)` against `/v1/projects/me/tags` (API-key auth).
+- New exported types: `TagSummary`, `ListTagsResult`, `CreateTagInput`,
+  `UpdateTagInput`, and the `Tags` namespace class.
+
 ## [0.4.0] - 2026-06-04
 
 ### Added
@@ -55,6 +65,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `isServerError` convenience flags.
 - ESM + CJS dual build with bundled `.d.ts` declarations.
 
+[0.5.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/typescript/v0.5.0
+[0.4.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/typescript/v0.4.0
 [0.3.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/typescript/v0.3.0
 [0.2.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/typescript-v0.2.0
 [0.1.0]: https://github.com/ModestNerds-Co/rerout-sdks/releases/tag/typescript-v0.1.0
