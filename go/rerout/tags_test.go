@@ -124,8 +124,8 @@ func TestTags_Create_OmitsColorWhenUnset(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	if strings.Contains(body, "color") {
-		t.Errorf("body should omit color when unset: %s", body)
+	if strings.Contains(body, `"color"`) {
+		t.Errorf("body should omit the color key when unset: %s", body)
 	}
 	if !strings.Contains(body, `"name":"No color"`) {
 		t.Errorf("body missing name: %s", body)
@@ -216,8 +216,8 @@ func TestTags_Update_ForwardsOnlyProvidedFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Update: %v", err)
 	}
-	if strings.Contains(body, "color") {
-		t.Errorf("body should omit color when unset: %s", body)
+	if strings.Contains(body, `"color"`) {
+		t.Errorf("body should omit the color key when unset: %s", body)
 	}
 	if !strings.Contains(body, `"name":"Renamed"`) {
 		t.Errorf("body missing name: %s", body)
